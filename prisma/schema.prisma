@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String     @id @default(uuid())
+  name           String
+  email          String     @unique
+  password       String
+  contact_number String
+  status         UserStatus @default(ACTIVE)
+  role           UserRole   @default(USER)
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Product {
+  id                     String   @id @default(uuid())
+  name                   String
+  model                  String
+  description            String?
+  specification          String
+  additional_information String?
+  brand_id               String
+  category_id            String
+  stock                  Int      @default(0)
+  price                  Int
+  discount_price         Int?
+  retailer_price         Int?
+  thumbnail              String
+  images                 String[] @default([])
+  published              Boolean
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  brand    Brand    @relation(fields: [brand_id], references: [id])
+  category Category @relation(fields: [category_id], references: [id])
+
+  @@map("products")
+}
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  icon        String?
+  description String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  Product     Product[]
+
+  @@map("brands")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  title       String   @unique
+  slug        String   @unique
+  icon        String?
+  description String?
+  parent_id   String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryToParent", fields: [parent_id], references: [id])
+  children Category[] @relation("CategoryToParent")
+  Product  Product[]
+
+  @@map("categories")
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  RETAILER
+  USER
+}
