@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -23,6 +17,9 @@ model User {
   role           UserRole   @default(USER)
   created_at     DateTime   @default(now())
   updated_at     DateTime   @updatedAt
+  Cart           Cart?
+  Order          Order[]
+  Card           Card[]
 
   @@map("users")
 }
@@ -46,8 +43,9 @@ model Product {
   created_at             DateTime @default(now())
   updated_at             DateTime @updatedAt
 
-  brand    Brand    @relation(fields: [brand_id], references: [id])
-  category Category @relation(fields: [category_id], references: [id])
+  brand     Brand       @relation(fields: [brand_id], references: [id])
+  category  Category    @relation(fields: [category_id], references: [id])
+  OrderItem OrderItem[]
 
   @@map("products")
 }
@@ -82,6 +80,99 @@ model Category {
   @@map("categories")
 }
 
+model Cart {
+  id         String     @id @default(uuid())
+  user_id    String?    @unique
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  CartItem   CartItem[]
+
+  user User? @relation(fields: [user_id], references: [id])
+
+  @@map("carts")
+}
+
+model CartItem {
+  id         String @id @default(uuid())
+  cart_id    String
+  product_id String
+  quantity   Int    @default(1)
+  price      Int
+
+  cart Cart @relation(fields: [cart_id], references: [id])
+
+  @@map("cart_items")
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  user_id         String?
+  total_price     Int
+  discount_amount Int           @default(0)
+  address_id      String
+  order_status    OrderStatus   @default(PENDING)
+  payment_method  String
+  payment_status  PaymentStatus @default(DUE)
+  coupon_id       String?       @unique
+  comment         String?
+
+  user      User?       @relation(fields: [user_id], references: [id])
+  address   Address     @relation(fields: [address_id], references: [id])
+  coupon    Coupon?     @relation(fields: [coupon_id], references: [id])
+  OrderItem OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String @id @default(uuid())
+  order_id   String
+  product_id String
+  quantity   Int    @default(1)
+  price      Int
+
+  order   Order   @relation(fields: [order_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("order_items")
+}
+
+model Coupon {
+  id             String   @id @default(uuid())
+  code           String
+  discount_value Int
+  expires_in     DateTime
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  Order          Order?
+
+  @@map("coupons")
+}
+
+model Address {
+  id             String  @id @default(uuid())
+  user_id        String
+  address        String
+  email          String
+  contact_number String
+  city           String
+  Order          Order[]
+
+  @@map("addresses")
+}
+
+model Card {
+  id          String @id @default(uuid())
+  user_id     String
+  card_number String
+  exp_date    String
+  cvc         String
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("cards")
+}
+
 enum UserStatus {
   ACTIVE
   BLOCKED
@@ -92,4 +183,17 @@ enum UserRole {
   ADMIN
   RETAILER
   USER
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  DUE
+  PAID
 }
