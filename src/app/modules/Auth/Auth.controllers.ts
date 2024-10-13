@@ -37,20 +37,21 @@ const login = catchAsync(async (req, res, next) => {
   });
 });
 
-// const resetPassword = catchAsync(
-//   async (req: Request & { user?: JwtPayload }, res, next) => {
-//     const result = await AuthServices.resetPassword(req?.user, req.body);
-//     sendResponse(res, {
-//       statusCode: httpStatus.OK,
-//       success: true,
-//       message: "Password reset successfully",
-//       data: result,
-//     });
-//   }
-// );
+const resetPassword = catchAsync(
+  async (req: Request & { user?: JwtPayload }, res, next) => {
+    const result = await AuthServices.resetPassword(req?.user, req.body);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Password reset is successful",
+      data: result,
+    });
+  }
+);
 
 export const AuthControllers = {
   createOTP,
   register,
   login,
+  resetPassword,
 };

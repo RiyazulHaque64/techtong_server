@@ -15,7 +15,7 @@ export interface ILoginCredential {
   password: string;
 }
 
-export type TChangePasswordPayload = {
+export interface IChangePasswordPayload {
   oldPassword: string;
   newPassword: string;
-};
+}

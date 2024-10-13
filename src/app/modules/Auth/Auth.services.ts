@@ -6,7 +6,7 @@ import ApiError from "../../error/ApiError";
 import prisma from "../../shared/prisma";
 import { generateToken } from "../../utils/jwtHelpers";
 import {
-  TChangePasswordPayload,
+  IChangePasswordPayload,
   IOTPCreatePayload,
   IRegisterPayload,
   ILoginCredential,
@@ -145,42 +145,55 @@ const login = async (credential: ILoginCredential) => {
   };
 };
 
-// const resetPassword = async (user: any, payload: TChangePasswordPayload) => {
-//   const userInfo = await prisma.user.findUniqueOrThrow({
-//     where: {
-//       id: user?.id,
-//     },
-//   });
+const resetPassword = async (user: any, payload: IChangePasswordPayload) => {
+  const userInfo = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: user?.id,
+    },
+  });
 
-//   const checkPassword = await bcrypt.compare(
-//     payload.oldPassword,
-//     userInfo.password
-//   );
-//   if (!checkPassword) {
-//     throw new ApiError(httpStatus.BAD_REQUEST, "Old password is invalid");
-//   }
+  const checkPassword = await bcrypt.compare(
+    payload.oldPassword,
+    userInfo.password
+  );
 
-//   const hashedPassword = await bcrypt.hash(
-//     payload.newPassword,
-//     Number(config.salt_rounds)
-//   );
+  if (!checkPassword) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Old password is invalid");
+  }
 
-//   const result = await prisma.user.update({
-//     where: {
-//       id: userInfo?.id,
-//     },
-//     data: {
-//       password: hashedPassword,
-//     },
-//   });
+  const hashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.salt_rounds)
+  );
 
-//   return result;
-// };
+  const result = await prisma.user.update({
+    where: {
+      id: userInfo?.id,
+    },
+    data: {
+      password: hashedPassword,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      contact_number: true,
+      role: true,
+      status: true,
+      profile_pic: true,
+      created_at: true,
+      updated_at: true,
+    },
+  });
+
+  return result;
+};
 
 export const AuthServices = {
   createOTP,
   register,
   login,
+  resetPassword,
 };
 
 // const image: Record<string, string> = {};

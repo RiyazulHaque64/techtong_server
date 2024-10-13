@@ -27,11 +27,11 @@ router.post(
   AuthControllers.login
 );
 
-// router.post(
-//   "/reset-password",
-//   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.USER),
-//   validateRequest(AuthValidations.resetPasswordValidationSchema),
-//   AuthControllers.resetPassword
-// );
+router.post(
+  "/reset-password",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),
+  validateRequest(AuthValidations.resetPasswordValidationSchema),
+  AuthControllers.resetPassword
+);
 
 export const AuthRoutes = router;
