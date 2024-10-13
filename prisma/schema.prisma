@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String     @id @default(uuid())
+  name           String
+  email          String     @unique
+  password       String
+  contact_number String     @unique
+  profile_pic_id String?    @unique
+  status         UserStatus @default(ACTIVE)
+  role           UserRole   @default(USER)
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+  Cart           Cart?
+  Order          Order[]
+  Card           Card[]
+
+  profile_pic Image? @relation(fields: [profile_pic_id], references: [id])
+
+  @@map("users")
+}
+
+model Product {
+  id                     String   @id @default(uuid())
+  name                   String
+  model                  String
+  description            String?
+  specification          String
+  additional_information String?
+  brand_id               String
+  category_id            String
+  stock                  Int      @default(0)
+  price                  Int
+  discount_price         Int?
+  retailer_price         Int?
+  thumbnail              String
+  images                 String[] @default([])
+  published              Boolean
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  brand     Brand       @relation(fields: [brand_id], references: [id])
+  category  Category    @relation(fields: [category_id], references: [id])
+  OrderItem OrderItem[]
+
+  @@map("products")
+}
+
+model Brand {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  icon        String?
+  description String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  Product     Product[]
+
+  @@map("brands")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  title       String   @unique
+  slug        String   @unique
+  icon        String?
+  description String?
+  parent_id   String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryToParent", fields: [parent_id], references: [id])
+  children Category[] @relation("CategoryToParent")
+  Product  Product[]
+
+  @@map("categories")
+}
+
+model Cart {
+  id         String     @id @default(uuid())
+  user_id    String?    @unique
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  CartItem   CartItem[]
+
+  user User? @relation(fields: [user_id], references: [id])
+
+  @@map("carts")
+}
+
+model CartItem {
+  id         String @id @default(uuid())
+  cart_id    String
+  product_id String
+  quantity   Int    @default(1)
+  price      Int
+
+  cart Cart @relation(fields: [cart_id], references: [id])
+
+  @@map("cart_items")
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  user_id         String?
+  total_price     Int
+  discount_amount Int           @default(0)
+  address_id      String
+  order_status    OrderStatus   @default(PENDING)
+  payment_method  String
+  payment_status  PaymentStatus @default(DUE)
+  coupon_id       String?       @unique
+  comment         String?
+
+  user      User?       @relation(fields: [user_id], references: [id])
+  address   Address     @relation(fields: [address_id], references: [id])
+  coupon    Coupon?     @relation(fields: [coupon_id], references: [id])
+  OrderItem OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String @id @default(uuid())
+  order_id   String
+  product_id String
+  quantity   Int    @default(1)
+  price      Int
+
+  order   Order   @relation(fields: [order_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("order_items")
+}
+
+model Coupon {
+  id             String   @id @default(uuid())
+  code           String
+  discount_value Int
+  expires_in     DateTime
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  Order          Order?
+
+  @@map("coupons")
+}
+
+model Address {
+  id             String  @id @default(uuid())
+  user_id        String
+  address        String
+  email          String
+  contact_number String
+  city           String
+  Order          Order[]
+
+  @@map("addresses")
+}
+
+model Card {
+  id          String @id @default(uuid())
+  user_id     String
+  card_number String
+  exp_date    String
+  cvc         String
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("cards")
+}
+
+model Image {
+  id       String @id @default(uuid())
+  path     String
+  cloud_id String
+  User     User?
+
+  @@map("images")
+}
+
+model UserOTP {
+  id             String @id @default(uuid())
+  name           String
+  email          String
+  contact_number String
+  otp            Int    @unique
+  expires_at     String
+
+  @@map("user_otp")
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  RETAILER
+  USER
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  DUE
+  PAID
+}
