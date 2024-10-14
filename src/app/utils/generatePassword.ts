@@ -1,4 +1,4 @@
-function generatePassword(length = 6) {
+export function generatePassword(length: number = 6): string {
   const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const numbers = "0123456789";
   const characters = letters + numbers;
@@ -12,9 +12,3 @@ function generatePassword(length = 6) {
 
   return password;
 }
-
-// Example usage
-const password = generatePassword();
-console.log("Generated password:", password);
-
-// : number = 6 : string

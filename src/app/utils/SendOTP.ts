@@ -8,10 +8,10 @@ export const OTPGenerator = () => {
   return Math.floor(100000 + Math.random() * 900000);
 };
 
-async function sendOTP(contactNumber: string, OTP: number) {
+async function sendOTP(contactNumber: string, body: string) {
   try {
     const message = await client.messages.create({
-      body: `Dear customer, your OTP is: ${OTP} \nTECHTONG`,
+      body: body,
       from: config.twilio_phone_number,
       to: `+88${contactNumber}`,
     });

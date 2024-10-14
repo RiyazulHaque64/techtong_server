@@ -4,6 +4,7 @@ import { JwtPayload } from "jsonwebtoken";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
 import { AuthServices } from "./Auth.services";
+import { TAuthUser } from "../../interfaces/common";
 
 const createOTP = catchAsync(async (req, res, next) => {
   const result = await AuthServices.createOTP(req.body);
@@ -38,7 +39,7 @@ const login = catchAsync(async (req, res, next) => {
 });
 
 const resetPassword = catchAsync(
-  async (req: Request & { user?: JwtPayload }, res, next) => {
+  async (req: Request & { user?: TAuthUser }, res, next) => {
     const result = await AuthServices.resetPassword(req?.user, req.body);
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -49,9 +50,22 @@ const resetPassword = catchAsync(
   }
 );
 
+const forgotPassword = catchAsync(async (req, res, next) => {
+  const result = await AuthServices.forgotPassword(
+    req.body.emailOrContactNumber
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "New password sent to your email",
+    data: result,
+  });
+});
+
 export const AuthControllers = {
   createOTP,
   register,
   login,
   resetPassword,
+  forgotPassword,
 };

@@ -18,5 +18,7 @@ declare namespace NodeJS {
     TWILIO_SID: string;
     TWILIO_AUTH_TOKEN: string;
     TWILIO_PHONE_NUMBER: string;
+    APP_EMAIL_ADDRESS: string;
+    EMAIL_APP_PASS: string;
   }
 }

@@ -15,11 +15,18 @@ import { TFile } from "../../interfaces/file";
 import { fileUploader } from "../../utils/fileUploader";
 import { TImage } from "../../interfaces/image";
 import sendOTP, { OTPGenerator, verifyOTP } from "../../utils/SendOTP";
+import { TAuthUser } from "../../interfaces/common";
+import { generatePassword } from "../../utils/generatePassword";
+import sendEmail from "../../utils/sendEmail";
 
 const createOTP = async (data: IOTPCreatePayload) => {
   const generatedOTP = OTPGenerator();
   const expirationTime = (new Date().getTime() + 2 * 60000).toString();
-  await sendOTP(data.contact_number, generatedOTP);
+  const SMSBody = `Dear ${
+    data.name || "customer"
+  }, your OTP is: ${generatedOTP} \nTECHTONG`;
+
+  await sendOTP(data.contact_number, SMSBody);
 
   const result = await prisma.userOTP.create({
     data: {
@@ -145,7 +152,10 @@ const login = async (credential: ILoginCredential) => {
   };
 };
 
-const resetPassword = async (user: any, payload: IChangePasswordPayload) => {
+const resetPassword = async (
+  user: TAuthUser | undefined,
+  payload: IChangePasswordPayload
+) => {
   const userInfo = await prisma.user.findUniqueOrThrow({
     where: {
       id: user?.id,
@@ -189,11 +199,61 @@ const resetPassword = async (user: any, payload: IChangePasswordPayload) => {
   return result;
 };
 
+const forgotPassword = async (emailOrContactNumber: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        {
+          email: emailOrContactNumber,
+        },
+        {
+          contact_number: emailOrContactNumber,
+        },
+      ],
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(httpStatus.FORBIDDEN, "User not found");
+  }
+
+  const generatedPassword = generatePassword(6);
+  const hashedPassword = await bcrypt.hash(
+    generatedPassword,
+    Number(config.salt_rounds)
+  );
+
+  await sendEmail(user.email, generatedPassword);
+
+  const SMSBody = `Dear ${
+    user.name || "customer"
+  }, your new password is: ${generatedPassword} \nTECHTONG`;
+
+  const sentPassword = await sendOTP(user.contact_number, SMSBody);
+
+  if (!sentPassword) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Failed to send password");
+  }
+
+  await prisma.user.update({
+    where: {
+      email: user.email,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  return null;
+};
+
 export const AuthServices = {
   createOTP,
   register,
   login,
   resetPassword,
+  forgotPassword,
 };
 
 // const image: Record<string, string> = {};

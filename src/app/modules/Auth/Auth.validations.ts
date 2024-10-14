@@ -53,9 +53,29 @@ const resetPasswordValidationSchema = z.object({
   }),
 });
 
+const forgotPasswordValidationSchema = z.object({
+  body: z.object({
+    emailOrContactNumber: z
+      .string({
+        required_error: "Email or contact number is required",
+      })
+      .refine(
+        (value: string) => {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          const bangladeshiPhoneRegex = /^01\d{9}$/;
+          return emailRegex.test(value) || bangladeshiPhoneRegex.test(value);
+        },
+        {
+          message: "Invalid email or contact number",
+        }
+      ),
+  }),
+});
+
 export const AuthValidations = {
   resetPasswordValidationSchema,
   registerValidationSchema,
   createOTPValidationSchema,
   loginValidationSchema,
+  forgotPasswordValidationSchema,
 };
