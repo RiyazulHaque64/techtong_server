@@ -5,6 +5,7 @@ export type TAuthUser = {
   contact_number: string;
   email: string;
   role: UserRole;
+  password_changed_at: number;
   iat: number;
   exp: number;
 };

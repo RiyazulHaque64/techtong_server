@@ -8,19 +8,21 @@ datasource db {
 }
 
 model User {
-  id             String     @id @default(uuid())
-  name           String
-  email          String     @unique
-  password       String
-  contact_number String     @unique
-  profile_pic_id String?    @unique
-  status         UserStatus @default(ACTIVE)
-  role           UserRole   @default(USER)
-  created_at     DateTime   @default(now())
-  updated_at     DateTime   @updatedAt
-  Cart           Cart?
-  Order          Order[]
-  Card           Card[]
+  id                  String     @id @default(uuid())
+  name                String
+  email               String     @unique
+  password            String
+  contact_number      String     @unique
+  profile_pic_id      String?    @unique
+  status              UserStatus @default(ACTIVE)
+  role                UserRole   @default(USER)
+  is_deleted          Boolean    @default(false)
+  password_changed_at DateTime   @default(now())
+  created_at          DateTime   @default(now())
+  updated_at          DateTime   @updatedAt
+  Cart                Cart?
+  Order               Order[]
+  Card                Card[]
 
   profile_pic Image? @relation(fields: [profile_pic_id], references: [id])
 

@@ -11,13 +11,11 @@ import {
   IRegisterPayload,
   ILoginCredential,
 } from "./Auth.interfaces";
-import { TFile } from "../../interfaces/file";
-import { fileUploader } from "../../utils/fileUploader";
-import { TImage } from "../../interfaces/image";
 import sendOTP, { OTPGenerator, verifyOTP } from "../../utils/SendOTP";
 import { TAuthUser } from "../../interfaces/common";
 import { generatePassword } from "../../utils/generatePassword";
 import sendEmail from "../../utils/sendEmail";
+import { userSelectedFields } from "../User/User.constants";
 
 const createOTP = async (data: IOTPCreatePayload) => {
   const generatedOTP = OTPGenerator();
@@ -25,6 +23,15 @@ const createOTP = async (data: IOTPCreatePayload) => {
   const SMSBody = `Dear ${
     data.name || "customer"
   }, your OTP is: ${generatedOTP} \nTECHTONG`;
+
+  const emailBody = `<div style="background-color: #F5F5F5; width: 80%; padding: 40px; display: flex; direction: column; justify-content: center; align-items: center">
+            <h1>Your OTP is:</h1>
+            <p style="font-size: 20px; font-weight: bold; background-color: #3352ff; padding: 10px; color: white; border-radius: 8px">${generatedOTP}</p>
+        </div>`;
+
+  if (data.email) {
+    await sendEmail(data.email, emailBody);
+  }
 
   await sendOTP(data.contact_number, SMSBody);
 
@@ -52,7 +59,7 @@ const register = async (data: IRegisterPayload) => {
     },
   });
   if (!storedOTP) {
-    throw new ApiError(httpStatus.FORBIDDEN, "OTP not found!");
+    throw new ApiError(httpStatus.FORBIDDEN, "OTP not matched");
   }
   const verifiedOTP = await verifyOTP(
     Number(data.otp),
@@ -77,14 +84,7 @@ const register = async (data: IRegisterPayload) => {
         password: hashedPassword,
       },
       select: {
-        id: true,
-        name: true,
-        email: true,
-        contact_number: true,
-        role: true,
-        status: true,
-        created_at: true,
-        updated_at: true,
+        ...userSelectedFields,
       },
     });
     await tx.userOTP.delete({
@@ -112,6 +112,7 @@ const login = async (credential: ILoginCredential) => {
         },
       ],
       status: UserStatus.ACTIVE,
+      is_deleted: false,
     },
   });
 
@@ -127,11 +128,16 @@ const login = async (credential: ILoginCredential) => {
     );
   }
 
+  const passwordChangedTime = Math.floor(
+    new Date(user.password_changed_at).getTime() / 1000
+  );
+
   const jwtPayload = {
     id: user.id,
     contact_number: user.contact_number,
     email: user.email,
     role: user.role,
+    password_changed_at: passwordChangedTime,
   };
 
   const accessToken = generateToken(
@@ -182,17 +188,10 @@ const resetPassword = async (
     },
     data: {
       password: hashedPassword,
+      password_changed_at: new Date(),
     },
     select: {
-      id: true,
-      name: true,
-      email: true,
-      contact_number: true,
-      role: true,
-      status: true,
-      profile_pic: true,
-      created_at: true,
-      updated_at: true,
+      ...userSelectedFields,
     },
   });
 
@@ -224,7 +223,12 @@ const forgotPassword = async (emailOrContactNumber: string) => {
     Number(config.salt_rounds)
   );
 
-  await sendEmail(user.email, generatedPassword);
+  const emailBody = `<div style="background-color: #F5F5F5; width: 80%; padding: 40px; display: flex; direction: column;        justify-content: center; align-items: center">
+            <h1>Your new password is:</h1>
+            <p style="font-size: 20px; font-weight: bold; background-color: #3352ff; padding: 10px; color: white; border-radius: 8px">${generatedPassword}</p>
+        </div>`;
+
+  await sendEmail(user.email, emailBody);
 
   const SMSBody = `Dear ${
     user.name || "customer"
@@ -242,6 +246,7 @@ const forgotPassword = async (emailOrContactNumber: string) => {
     },
     data: {
       password: hashedPassword,
+      password_changed_at: new Date(),
     },
   });
 
@@ -255,24 +260,3 @@ export const AuthServices = {
   resetPassword,
   forgotPassword,
 };
-
-// const image: Record<string, string> = {};
-// if (file) {
-//   const convertedFile = Buffer.from(file.buffer).toString("base64");
-//   const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
-//   const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
-//   image["path"] = cloudinaryResponse?.secure_url as string;
-//   image["cloud_id"] = cloudinaryResponse?.public_id as string;
-// }
-
-// let profilePic;
-
-// if (image.path && image.cloud_id) {
-//   profilePic = await prisma.image.create({
-//     data: image as TImage,
-//   });
-// }
-
-// if (profilePic?.id) {
-//   data.profile_pic_id = profilePic?.id;
-// }

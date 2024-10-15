@@ -1,20 +1,6 @@
-function generatePassword(length = 6) {
-  const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const numbers = "0123456789";
-  const characters = letters + numbers;
+const person = {
+  name: "Riyazul Haque",
+  age: 22,
+};
 
-  let password = "";
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    password += characters[randomIndex];
-  }
-
-  return password;
-}
-
-// Example usage
-const password = generatePassword();
-console.log("Generated password:", password);
-
-// : number = 6 : string
+console.log(Object.hasOwnProperty.call(person, "name"));

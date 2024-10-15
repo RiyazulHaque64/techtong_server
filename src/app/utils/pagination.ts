@@ -9,8 +9,8 @@ const pagination = (paginationOptions: TPaginationOptions) => {
   const pageNumber = Number(page) || 1;
   const limitNumber = Number(limit) || 10;
   const skip = (pageNumber - 1) * limitNumber;
-  const sortWith = sortBy || "createdAt";
-  const sortSequence = sortOrder || "desc";
+  const sortWith = sortBy || "created_at";
+  const sortSequence = sortOrder || "asc";
 
   return {
     pageNumber,

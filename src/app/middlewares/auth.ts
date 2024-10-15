@@ -4,6 +4,8 @@ import { JwtPayload } from "jsonwebtoken";
 import config from "../../config";
 import ApiError from "../error/ApiError";
 import { verifyToken } from "../utils/jwtHelpers";
+import prisma from "../shared/prisma";
+import { TAuthUser } from "../interfaces/common";
 
 const auth = (...roles: string[]) => {
   return async (
@@ -17,10 +19,32 @@ const auth = (...roles: string[]) => {
         throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized");
       }
 
-      const verifiedUser = verifyToken(token, config.jwt_access_secret);
+      const verifiedUser = verifyToken(
+        token,
+        config.jwt_access_secret
+      ) as TAuthUser;
+
+      const user = await prisma.user.findUniqueOrThrow({
+        where: {
+          id: verifiedUser?.id,
+          is_deleted: false,
+          status: "ACTIVE",
+        },
+      });
+
+      const passwordChangedTime = Math.floor(
+        new Date(user?.password_changed_at).getTime() / 1000
+      );
+
+      if (passwordChangedTime > verifiedUser.password_changed_at) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Password changed recently"
+        );
+      }
 
       if (roles?.length && !roles.includes(verifiedUser?.role)) {
-        throw new ApiError(httpStatus.FORBIDDEN, "Forbidden");
+        throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized");
       }
 
       req.user = verifiedUser;
