@@ -56,9 +56,38 @@ const updateProfile = catchAsync(
   }
 );
 
+const updateUserRoleAndStatus = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const result = await UserServices.updateUserRoleAndStatus(
+      req.user,
+      req.body
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Successfully updated the user",
+      data: result,
+    });
+  }
+);
+
+const deleteUser = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const result = await UserServices.deleteUser(req.user, req.body);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Successfully deleted the user",
+      data: result,
+    });
+  }
+);
+
 export const UserControllers = {
   getUsers,
   getUser,
   getMe,
   updateProfile,
+  updateUserRoleAndStatus,
+  deleteUser,
 };

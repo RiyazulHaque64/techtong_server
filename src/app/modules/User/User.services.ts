@@ -1,4 +1,4 @@
-import { Prisma, UserStatus } from "@prisma/client";
+import { Prisma, UserRole, UserStatus } from "@prisma/client";
 import pagination from "../../utils/pagination";
 import { userSearchableFields, userSelectedFields } from "./User.constants";
 import prisma from "../../shared/prisma";
@@ -6,6 +6,9 @@ import { TAuthUser } from "../../interfaces/common";
 import { TFile } from "../../interfaces/file";
 import { fileUploader } from "../../utils/fileUploader";
 import { TImage } from "../../interfaces/image";
+import ApiError from "../../error/ApiError";
+import httpStatus from "http-status";
+import { TUpdateUserRoleAndStatusPayload } from "./User.interfaces";
 
 const getUsers = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, ...remainingQuery } =
@@ -154,9 +157,72 @@ const updateProfile = async (
   return result;
 };
 
+const updateUserRoleAndStatus = async (
+  user: TAuthUser | undefined,
+  payload: TUpdateUserRoleAndStatusPayload
+) => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: payload.id,
+      is_deleted: false,
+    },
+  });
+  if (userData.role === UserRole.SUPER_ADMIN && user?.role === UserRole.ADMIN) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "You are not authorized to update this user"
+    );
+  }
+  if (user?.role === UserRole.ADMIN && payload.role === UserRole.SUPER_ADMIN) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "You are not authorized to update this"
+    );
+  }
+  const result = await prisma.user.update({
+    where: {
+      id: userData.id,
+    },
+    data: payload,
+    select: {
+      ...userSelectedFields,
+    },
+  });
+  return result;
+};
+
+const deleteUser = async (
+  user: TAuthUser | undefined,
+  payload: { id: string }
+) => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: payload.id,
+    },
+  });
+  if (userData.role === UserRole.SUPER_ADMIN && user?.role === UserRole.ADMIN) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "You are not authorized to delete this user"
+    );
+  }
+  const result = await prisma.user.update({
+    where: {
+      id: payload.id,
+    },
+    data: {
+      is_deleted: true,
+    },
+  });
+
+  return result;
+};
+
 export const UserServices = {
   getUsers,
   getUser,
   getMe,
   updateProfile,
+  updateUserRoleAndStatus,
+  deleteUser,
 };

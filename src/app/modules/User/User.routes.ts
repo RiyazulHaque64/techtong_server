@@ -5,6 +5,7 @@ import { UserControllers } from "./User.controllers";
 import validateFormData from "../../middlewares/validateFormData";
 import { UserValidations } from "./User.validations";
 import { fileUploader } from "../../utils/fileUploader";
+import validateRequest from "../../middlewares/validateRequest";
 
 const router = Router();
 
@@ -32,6 +33,20 @@ router.patch(
   fileUploader.singleUpload.single("profile_pic"),
   validateFormData(UserValidations.updateProfileValidationSchema),
   UserControllers.updateProfile
+);
+
+router.patch(
+  "/update-role-status",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(UserValidations.updateUserRoleAndStatusValidationSchema),
+  UserControllers.updateUserRoleAndStatus
+);
+
+router.delete(
+  "/delete-user",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(UserValidations.deleteUserValidationSchema),
+  UserControllers.deleteUser
 );
 
 export const UserRoutes = router;

@@ -1,3 +1,5 @@
+import { UserRole, UserStatus } from "@prisma/client";
+
 export const userFilterableFields = [
   "name",
   "email",
@@ -25,3 +27,12 @@ export const userSelectedFields = {
   created_at: true,
   updated_at: true,
 };
+
+export const userRole = [
+  UserRole.SUPER_ADMIN,
+  UserRole.ADMIN,
+  UserRole.RETAILER,
+  UserRole.USER,
+];
+
+export const userStatus = [UserStatus.ACTIVE, UserStatus.BLOCKED];
