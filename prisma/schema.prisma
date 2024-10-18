@@ -23,6 +23,7 @@ model User {
   Cart                Cart?
   Order               Order[]
   Card                Card[]
+  Review              Review[]
 
   profile_pic Image? @relation(fields: [profile_pic_id], references: [id])
 
@@ -33,11 +34,13 @@ model Product {
   id                     String   @id @default(uuid())
   name                   String
   model                  String
-  description            String?
-  specification          String
+  description            Json?
+  specification          Json
   additional_information String?
+  key_features           Json?
   brand_id               String
   category_id            String
+  type                   String?
   stock                  Int      @default(0)
   price                  Int
   discount_price         Int?
@@ -51,6 +54,7 @@ model Product {
   brand     Brand       @relation(fields: [brand_id], references: [id])
   category  Category    @relation(fields: [category_id], references: [id])
   OrderItem OrderItem[]
+  Review    Review[]
 
   @@map("products")
 }
@@ -140,6 +144,19 @@ model OrderItem {
   product Product @relation(fields: [product_id], references: [id])
 
   @@map("order_items")
+}
+
+model Review {
+  id         String @id @default(uuid())
+  user_id    String
+  product_id String
+  rating     Int    @default(5)
+  comment    String
+
+  user    User    @relation(fields: [user_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("reviews")
 }
 
 model Coupon {
