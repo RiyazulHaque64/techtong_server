@@ -28,6 +28,13 @@ router.delete(
   ImageControllers.deleteImages
 );
 
+router.patch(
+  "/change-name/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(ImageValidations.changeImageNameValidationSchema),
+  ImageControllers.changeImageName
+);
+
 router.get(
   "/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),

@@ -8,6 +8,7 @@ import { Request } from "express";
 import { TDeleteImagePayload } from "./Image.interfaces";
 import pagination from "../../utils/pagination";
 import { imageSearchableFields } from "./Image.constant";
+import path from "path";
 
 const uploadImages = async (req: Request) => {
   const files = req.files as TFiles;
@@ -26,8 +27,9 @@ const uploadImages = async (req: Request) => {
       const cloudinaryResponse = (await fileUploader.uploadToCloudinary(
         dataURI
       )) as TCloudinaryResponse;
+      const fileName = path.parse(file.originalname).name;
       images.push({
-        name: file.originalname,
+        name: fileName,
         path: cloudinaryResponse?.secure_url,
         cloud_id: cloudinaryResponse?.public_id,
       });
@@ -105,6 +107,30 @@ const getImage = async (id: string) => {
   return result;
 };
 
+const changeImageName = async (id: string, payload: { name: string }) => {
+  const { name } = payload;
+
+  const image = await prisma.image.findFirst({
+    where: {
+      id,
+    },
+  });
+
+  if (!image) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Image not found to update");
+  }
+
+  const result = await prisma.image.update({
+    where: {
+      id: id,
+    },
+    data: {
+      name,
+    },
+  });
+  return result;
+};
+
 const deleteImages = async (payload: TDeleteImagePayload) => {
   const { cloud_ids } = payload;
   const cloudinaryResponse = (await fileUploader.deleteToCloudinary(
@@ -144,5 +170,6 @@ export const ImageServices = {
   uploadImages,
   getImages,
   getImage,
+  changeImageName,
   deleteImages,
 };

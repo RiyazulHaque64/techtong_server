@@ -16,6 +16,18 @@ const deleteImagesValidationSchema = z.object({
     .strict(),
 });
 
+const changeImageNameValidationSchema = z.object({
+  body: z
+    .object({
+      name: z.string({
+        required_error: "Updated name is required",
+        invalid_type_error: "Updated name must be a text",
+      }),
+    })
+    .strict(),
+});
+
 export const ImageValidations = {
   deleteImagesValidationSchema,
+  changeImageNameValidationSchema,
 };
