@@ -130,6 +130,7 @@ const updateProfile = async (
     const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
     image["path"] = cloudinaryResponse?.secure_url as string;
     image["cloud_id"] = cloudinaryResponse?.public_id as string;
+    image["name"] = file.originalname;
   }
 
   let profilePic;

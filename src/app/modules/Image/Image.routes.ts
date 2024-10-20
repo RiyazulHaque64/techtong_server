@@ -8,6 +8,12 @@ import validateRequest from "../../middlewares/validateRequest";
 
 const router = Router();
 
+router.get(
+  "/",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  ImageControllers.getImages
+);
+
 router.post(
   "/upload-images",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
@@ -20,6 +26,12 @@ router.delete(
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   validateRequest(ImageValidations.deleteImagesValidationSchema),
   ImageControllers.deleteImages
+);
+
+router.get(
+  "/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  ImageControllers.getImage
 );
 
 export const ImageRoutes = router;

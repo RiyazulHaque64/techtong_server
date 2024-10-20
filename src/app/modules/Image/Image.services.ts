@@ -6,9 +6,12 @@ import { fileUploader } from "../../utils/fileUploader";
 import prisma from "../../shared/prisma";
 import { Request } from "express";
 import { TDeleteImagePayload } from "./Image.interfaces";
+import pagination from "../../utils/pagination";
+import { imageSearchableFields } from "./Image.constant";
 
 const uploadImages = async (req: Request) => {
   const files = req.files as TFiles;
+
   if (!files?.images?.length) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No images found");
   }
@@ -24,6 +27,7 @@ const uploadImages = async (req: Request) => {
         dataURI
       )) as TCloudinaryResponse;
       images.push({
+        name: file.originalname,
         path: cloudinaryResponse?.secure_url,
         cloud_id: cloudinaryResponse?.public_id,
       });
@@ -33,6 +37,69 @@ const uploadImages = async (req: Request) => {
   const result = await prisma.image.createMany({
     data: images,
     skipDuplicates: true,
+  });
+
+  return {
+    uploaded_count: result.count,
+    message: `${result.count} image has been uploaded`,
+  };
+};
+
+const getImages = async (query: Record<string, any>) => {
+  const { searchTerm, page, limit, sortBy, sortOrder } = query;
+
+  const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+  });
+
+  const andConditions: Prisma.ImageWhereInput[] = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      OR: imageSearchableFields.map((field) => {
+        return {
+          [field]: {
+            contains: searchTerm,
+            mode: "insensitive",
+          },
+        };
+      }),
+    });
+  }
+
+  const whereConditions = {
+    AND: andConditions,
+  };
+
+  const result = await prisma.image.findMany({
+    where: whereConditions,
+    skip: skip,
+    take: limitNumber,
+    orderBy: {
+      [sortWith]: sortSequence,
+    },
+  });
+
+  const total = await prisma.image.count();
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+    },
+    data: result,
+  };
+};
+
+const getImage = async (id: string) => {
+  const result = await prisma.image.findUniqueOrThrow({
+    where: {
+      id,
+    },
   });
 
   return result;
@@ -75,5 +142,7 @@ const deleteImages = async (payload: TDeleteImagePayload) => {
 
 export const ImageServices = {
   uploadImages,
+  getImages,
+  getImage,
   deleteImages,
 };

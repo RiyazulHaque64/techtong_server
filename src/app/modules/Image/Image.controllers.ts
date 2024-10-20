@@ -13,6 +13,26 @@ const uploadImages = catchAsync(async (req, res, next) => {
   });
 });
 
+const getImages = catchAsync(async (req, res, next) => {
+  const result = await ImageServices.getImages(req.query);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Successflly retrieved the images",
+    data: result,
+  });
+});
+
+const getImage = catchAsync(async (req, res, next) => {
+  const result = await ImageServices.getImage(req.params.id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Successflly retrieved the image",
+    data: result,
+  });
+});
+
 const deleteImages = catchAsync(async (req, res, next) => {
   const result = await ImageServices.deleteImages(req.body);
   sendResponse(res, {
@@ -25,5 +45,7 @@ const deleteImages = catchAsync(async (req, res, next) => {
 
 export const ImageControllers = {
   uploadImages,
+  getImages,
+  getImage,
   deleteImages,
 };

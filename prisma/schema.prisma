@@ -198,10 +198,13 @@ model Card {
 }
 
 model Image {
-  id       String @id @default(uuid())
-  path     String
-  cloud_id String
-  User     User?
+  id         String   @id @default(uuid())
+  name       String
+  path       String
+  cloud_id   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  User       User?
 
   @@map("images")
 }
