@@ -31,5 +31,5 @@ export type TFile = {
 };
 
 export type TFiles = {
-  images: TFile[];
+  images?: TFile[];
 };

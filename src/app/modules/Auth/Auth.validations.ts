@@ -46,7 +46,7 @@ const resetPasswordValidationSchema = z.object({
     oldPassword: z.string({ required_error: "Old password is required" }),
     newPassword: z
       .string({ required_error: "New password is required" })
-      .min(6, { message: "assword must be at least 6 characters long" })
+      .min(6, { message: "password must be at least 6 characters long" })
       .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, {
         message: "Password must contain at least one letter and one number",
       }),

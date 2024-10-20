@@ -5,10 +5,10 @@ import prisma from "../../shared/prisma";
 import { TAuthUser } from "../../interfaces/common";
 import { TFile } from "../../interfaces/file";
 import { fileUploader } from "../../utils/fileUploader";
-import { TImage } from "../../interfaces/image";
 import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
 import { TUpdateUserRoleAndStatusPayload } from "./User.interfaces";
+import { TImage } from "../Image/Image.interfaces";
 
 const getUsers = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, ...remainingQuery } =
