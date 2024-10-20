@@ -14,7 +14,7 @@ const uploadImages = catchAsync(async (req, res, next) => {
 });
 
 const deleteImages = catchAsync(async (req, res, next) => {
-  const result = await ImageServices.uploadImages(req.body);
+  const result = await ImageServices.deleteImages(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

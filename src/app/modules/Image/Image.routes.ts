@@ -3,6 +3,8 @@ import { Router } from "express";
 import auth from "../../middlewares/auth";
 import { ImageControllers } from "./Image.controllers";
 import { fileUploader } from "../../utils/fileUploader";
+import { ImageValidations } from "./Image.validations";
+import validateRequest from "../../middlewares/validateRequest";
 
 const router = Router();
 
@@ -16,6 +18,7 @@ router.post(
 router.delete(
   "/delete-images",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(ImageValidations.deleteImagesValidationSchema),
   ImageControllers.deleteImages
 );
 

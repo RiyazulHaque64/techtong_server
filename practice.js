@@ -61,5 +61,13 @@ const product = {
   thumbnail_id: "123456",
 };
 
-const date = new Date("2024-10-01");
-console.log(date);
+const deleted_images = {
+  skn: "deleted1",
+  bkn: "deleted1",
+  ckn: "not-found",
+};
+
+const deleted_id = Object.entries(undefined)
+  .filter(([key, value]) => value === "deleted")
+  .map(([key, value]) => key);
+console.log(deleted_id);

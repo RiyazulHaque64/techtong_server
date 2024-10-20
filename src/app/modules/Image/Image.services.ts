@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { fileUploader } from "../../utils/fileUploader";
 import prisma from "../../shared/prisma";
 import { Request } from "express";
+import { TDeleteImagePayload } from "./Image.interfaces";
 
 const uploadImages = async (req: Request) => {
   const files = req.files as TFiles;
@@ -37,11 +38,39 @@ const uploadImages = async (req: Request) => {
   return result;
 };
 
-const deleteImages = async (cloudIds: string[]) => {
-  const cloudinaryResponse = await fileUploader.deleteToCloudinary(cloudIds);
-  console.log(cloudinaryResponse);
+const deleteImages = async (payload: TDeleteImagePayload) => {
+  const { cloud_ids } = payload;
+  const cloudinaryResponse = (await fileUploader.deleteToCloudinary(
+    cloud_ids
+  )) as any;
 
-  return null;
+  if (!cloudinaryResponse) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Failed to delete images"
+    );
+  }
+
+  const deletedIds = Object.entries(cloudinaryResponse.deleted)
+    .filter(([key, value]) => value === "deleted")
+    .map(([key, value]) => key);
+
+  if (deletedIds.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "No valid id found to delete");
+  }
+
+  const result = await prisma.image.deleteMany({
+    where: {
+      cloud_id: {
+        in: deletedIds,
+      },
+    },
+  });
+
+  return {
+    deleted_count: result.count,
+    message: `${result.count} image has been deleted`,
+  };
 };
 
 export const ImageServices = {
