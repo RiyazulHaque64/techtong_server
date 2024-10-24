@@ -2,14 +2,14 @@ import httpStatus from "http-status";
 import ApiError from "../../error/ApiError";
 import prisma from "../../shared/prisma";
 import { generateSlug } from "../../utils/generateSlug";
-import { TAddCategoryPayload } from "./Category.interfaces";
+import { TCategoryPayload } from "./Category.interfaces";
 import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
 import { categorySearchableFields } from "./Category.constants";
 
-const addCategory = async (payload: TAddCategoryPayload) => {
+const addCategory = async (payload: TCategoryPayload) => {
   if (payload.parent_id) {
-    const parent_category = await prisma.category.findUniqueOrThrow({
+    const parent_category = await prisma.category.findFirst({
       where: {
         id: payload.parent_id,
       },
@@ -106,6 +106,32 @@ const getCategory = async (id: string) => {
   return result;
 };
 
+const updateCategory = async (id: string, payload: TCategoryPayload) => {
+  if (payload.parent_id) {
+    const parent_category = await prisma.category.findFirst({
+      where: {
+        id: payload.parent_id,
+      },
+    });
+    if (!parent_category) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Parent category not found");
+    }
+  }
+  if (payload.title) {
+    payload.slug = generateSlug(payload.title);
+  }
+  const result = await prisma.category.update({
+    where: {
+      id,
+    },
+    data: payload,
+    include: {
+      parent: true,
+    },
+  });
+  return result;
+};
+
 const deleteCategory = async (id: string) => {
   const result = await prisma.category.delete({
     where: {
@@ -120,4 +146,5 @@ export const CategoryServices = {
   getCategories,
   getCategory,
   deleteCategory,
+  updateCategory,
 };

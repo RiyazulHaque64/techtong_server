@@ -9,6 +9,8 @@ const handlePrismaClientKnownError = (
   let message = "Database error!";
   let errorSources: TErrorSources[] = [];
 
+  console.log(err.message);
+
   if (err.code === "P2002" && err.meta?.target) {
     statusCode = httpStatus.CONFLICT;
     message = "Unique constraint violation. Duplicate value exists.";
@@ -18,11 +20,11 @@ const handlePrismaClientKnownError = (
     }));
   } else if (err.code === "P2025") {
     statusCode = httpStatus.NOT_FOUND;
-    message = "Data not found";
+    message = err.message || "Data not found";
     errorSources = [
       {
         path: err.meta?.modelName as string,
-        message: err.meta?.cause as string,
+        message: (err.meta?.cause as string) || err.message,
       },
     ];
   }

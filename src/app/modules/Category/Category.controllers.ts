@@ -33,6 +33,16 @@ const getCategory = catchAsync(async (req, res, next) => {
   });
 });
 
+const updateCategory = catchAsync(async (req, res, next) => {
+  const result = await CategoryServices.updateCategory(req.params.id, req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Successflly updated the category",
+    data: result,
+  });
+});
+
 const deleteCategory = catchAsync(async (req, res, next) => {
   const result = await CategoryServices.deleteCategory(req.params.id);
   sendResponse(res, {
@@ -48,4 +58,5 @@ export const CategoryControllers = {
   getCategories,
   getCategory,
   deleteCategory,
+  updateCategory,
 };
