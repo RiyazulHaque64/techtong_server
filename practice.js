@@ -61,13 +61,61 @@ const product = {
   thumbnail_id: "123456",
 };
 
-const deleted_images = {
-  skn: "deleted1",
-  bkn: "deleted1",
-  ckn: "not-found",
-};
+const top100Films = [
+  {
+    id: 1,
+    name: "Loracan Ward",
+    profile_pic:
+      "https://e7.pngegg.com/pngimages/348/800/png-clipart-man-wearing-blue-shirt-illustration-computer-icons-avatar-user-login-avatar-blue-child.png",
+  },
+  {
+    id: 2,
+    name: "Fazly Alahi",
+    profile_pic:
+      "https://e7.pngegg.com/pngimages/348/800/png-clipart-man-wearing-blue-shirt-illustration-computer-icons-avatar-user-login-avatar-blue-child.png",
+  },
+  {
+    id: 3,
+    name: "Riyazul Haque",
+    profile_pic:
+      "https://e7.pngegg.com/pngimages/348/800/png-clipart-man-wearing-blue-shirt-illustration-computer-icons-avatar-user-login-avatar-blue-child.png",
+  },
+  {
+    id: 4,
+    name: "Ismail Harik",
+    profile_pic:
+      "https://e7.pngegg.com/pngimages/348/800/png-clipart-man-wearing-blue-shirt-illustration-computer-icons-avatar-user-login-avatar-blue-child.png",
+  },
+  {
+    id: 5,
+    name: "Ismail Harik 2",
+    profile_pic:
+      "https://e7.pngegg.com/pngimages/348/800/png-clipart-man-wearing-blue-shirt-illustration-computer-icons-avatar-user-login-avatar-blue-child.png",
+  },
+];
 
-const deleted_id = Object.entries(undefined)
-  .filter(([key, value]) => value === "deleted")
-  .map(([key, value]) => key);
-console.log(deleted_id);
+const selected = [
+  {
+    id: 2,
+    name: "Riyazul Haque",
+  },
+  {
+    id: 3,
+    name: "Rapu",
+  },
+];
+
+const remainingTenants = top100Films.filter(
+  (tenant) =>
+    !selected.some((selectedTenant) => selectedTenant.id === tenant.id)
+);
+
+const category = "Motherboard category";
+
+const slug = category
+  .trim()
+  .toLowerCase()
+  .replace(/ /g, "-")
+  .replace(/[^\w-]+/g, "");
+
+console.log(slug);

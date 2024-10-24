@@ -38,8 +38,8 @@ model Product {
   specification          Json
   additional_information String?
   key_features           Json?
-  brand_id               String
-  category_id            String
+  brand_id               String?
+  category_id            String?
   type                   String?
   tags                   String[]    @default([])
   code                   String
@@ -55,8 +55,8 @@ model Product {
   OrderItem              OrderItem[]
   Review                 Review[]
 
-  brand    Brand    @relation(fields: [brand_id], references: [id])
-  category Category @relation(fields: [category_id], references: [id])
+  brand    Brand?    @relation(fields: [brand_id], references: [id])
+  category Category? @relation(fields: [category_id], references: [id])
 
   @@map("products")
 }

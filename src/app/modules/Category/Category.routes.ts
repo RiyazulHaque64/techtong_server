@@ -14,4 +14,4 @@ router.post(
   CategoryControllers.addCategory
 );
 
-export const ProductRoutes = router;
+export const CategoryRoutes = router;

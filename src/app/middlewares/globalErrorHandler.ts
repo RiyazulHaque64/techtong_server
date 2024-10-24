@@ -4,6 +4,9 @@ import { ZodError } from "zod";
 import config from "../../config";
 import handleZodError from "../error/handleZodError";
 import { TErrorSources } from "../interfaces/error";
+import { Prisma } from "@prisma/client";
+import handlePrismaClientKnownError from "../error/handlePrismaClientKnownError";
+import handlePrismaValidationError from "../error/handlePrismaValidationError";
 
 const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
   let statusCode = error.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
@@ -17,6 +20,16 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
 
   if (error instanceof ZodError) {
     const simplifiedError = handleZodError(error);
+    statusCode = simplifiedError.statusCode;
+    message = simplifiedError.message;
+    errorSources = simplifiedError.errorSources;
+  } else if (error instanceof Prisma.PrismaClientValidationError) {
+    const simplifiedError = handlePrismaValidationError(error);
+    statusCode = simplifiedError.statusCode;
+    message = simplifiedError.message;
+    errorSources = simplifiedError.errorSources;
+  } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    const simplifiedError = handlePrismaClientKnownError(error);
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
     errorSources = simplifiedError.errorSources;

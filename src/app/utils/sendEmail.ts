@@ -16,10 +16,8 @@ const sendEmail = async (receiverEmail: string, html: string) => {
     from: `"Techtong" <${config.app_email_address}>`,
     to: receiverEmail,
     subject: "Techtong - New Password",
-    html, // html body
+    html,
   });
-  console.log("Info....", info);
-  console.log("Message sent: %s", info.messageId);
   return info;
 };
 
