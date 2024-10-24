@@ -7,11 +7,7 @@ import { CategoryValidations } from "./Category.validations";
 
 const router = Router();
 
-router.get(
-  "/",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  CategoryControllers.getCategories
-);
+router.get("/", CategoryControllers.getCategories);
 
 router.post(
   "/add-category",
@@ -19,5 +15,7 @@ router.post(
   validateRequest(CategoryValidations.addCategoryValidationSchema),
   CategoryControllers.addCategory
 );
+
+router.get("/:id", CategoryControllers.getCategory);
 
 export const CategoryRoutes = router;

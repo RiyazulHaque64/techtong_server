@@ -94,7 +94,20 @@ const getCategories = async (query: Record<string, any>) => {
   };
 };
 
+const getCategory = async (id: string) => {
+  const result = await prisma.category.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    include: {
+      parent: true,
+    },
+  });
+  return result;
+};
+
 export const CategoryServices = {
   addCategory,
   getCategories,
+  getCategory,
 };
