@@ -16,6 +16,17 @@ export const userFilterableFields = [
 
 export const userSearchableFields = ["name", "email", "contact_number"];
 
+export const userSortableFields = [
+  "id",
+  "name",
+  "email",
+  "contact_number",
+  "created_at",
+  "updated_at",
+  "role",
+  "status",
+];
+
 export const userSelectedFields = {
   id: true,
   name: true,

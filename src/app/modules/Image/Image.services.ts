@@ -7,8 +7,10 @@ import prisma from "../../shared/prisma";
 import { Request } from "express";
 import { TDeleteImagePayload } from "./Image.interfaces";
 import pagination from "../../utils/pagination";
-import { imageSearchableFields } from "./Image.constant";
+import { imageSearchableFields, imageSortableFields } from "./Image.constant";
 import path from "path";
+import fieldValidityChecker from "../../utils/fieldValidityChecker";
+import { sortOrderType } from "../../constants/common";
 
 const uploadImages = async (req: Request) => {
   const files = req.files as TFiles;
@@ -49,6 +51,19 @@ const uploadImages = async (req: Request) => {
 
 const getImages = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder } = query;
+
+  if (sortBy) {
+    const res = fieldValidityChecker(imageSortableFields, sortBy);
+    if (!res.valid) {
+      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
+    }
+  }
+  if (sortOrder) {
+    const res = fieldValidityChecker(sortOrderType, sortOrder);
+    if (!res.valid) {
+      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
+    }
+  }
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,

@@ -1,6 +1,10 @@
 import { Prisma, UserRole, UserStatus } from "@prisma/client";
 import pagination from "../../utils/pagination";
-import { userSearchableFields, userSelectedFields } from "./User.constants";
+import {
+  userSearchableFields,
+  userSelectedFields,
+  userSortableFields,
+} from "./User.constants";
 import prisma from "../../shared/prisma";
 import { TAuthUser } from "../../interfaces/common";
 import { TFile } from "../../interfaces/file";
@@ -9,10 +13,25 @@ import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
 import { TUpdateUserRoleAndStatusPayload } from "./User.interfaces";
 import { TImage } from "../Image/Image.interfaces";
+import fieldValidityChecker from "../../utils/fieldValidityChecker";
+import { sortOrderType } from "../../constants/common";
 
 const getUsers = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, ...remainingQuery } =
     query;
+
+  if (sortBy) {
+    const res = fieldValidityChecker(userSortableFields, sortBy);
+    if (!res.valid) {
+      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
+    }
+  }
+  if (sortOrder) {
+    const res = fieldValidityChecker(sortOrderType, sortOrder);
+    if (!res.valid) {
+      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
+    }
+  }
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
