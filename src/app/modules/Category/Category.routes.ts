@@ -17,5 +17,6 @@ router.post(
 );
 
 router.get("/:id", CategoryControllers.getCategory);
+router.delete("/:id", CategoryControllers.deleteCategory);
 
 export const CategoryRoutes = router;

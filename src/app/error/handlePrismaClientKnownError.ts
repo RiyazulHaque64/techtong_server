@@ -16,6 +16,15 @@ const handlePrismaClientKnownError = (
       path: field,
       message: `The ${field} is already exists in the ${err.meta?.modelName}. Duplicate value found.`,
     }));
+  } else if (err.code === "P2025") {
+    statusCode = httpStatus.NOT_FOUND;
+    message = "Data not found";
+    errorSources = [
+      {
+        path: err.meta?.modelName as string,
+        message: err.meta?.cause as string,
+      },
+    ];
   }
 
   return {
