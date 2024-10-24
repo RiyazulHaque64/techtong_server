@@ -5,7 +5,12 @@ import { generateSlug } from "../../utils/generateSlug";
 import { TCategoryPayload } from "./Category.interfaces";
 import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
-import { categorySearchableFields } from "./Category.constants";
+import {
+  categorySearchableFields,
+  categorySortableFields,
+} from "./Category.constants";
+import fieldValidityChecker from "../../utils/fieldValidityChecker";
+import { sortOrderType } from "../../constants/common";
 
 const addCategory = async (payload: TCategoryPayload) => {
   if (payload.parent_id) {
@@ -35,6 +40,19 @@ const addCategory = async (payload: TCategoryPayload) => {
 
 const getCategories = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, parent } = query;
+
+  if (sortBy) {
+    const res = fieldValidityChecker(categorySortableFields, sortBy);
+    if (!res.valid) {
+      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
+    }
+  }
+  if (sortOrder) {
+    const res = fieldValidityChecker(sortOrderType, sortOrder);
+    if (!res.valid) {
+      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
+    }
+  }
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,

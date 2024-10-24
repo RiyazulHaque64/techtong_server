@@ -10,7 +10,7 @@ const addProduct = catchAsync(async (req, res, next) => {
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
-    message: "Successflly added the product",
+    message: "Successfully added the product",
     data: result,
   });
 });

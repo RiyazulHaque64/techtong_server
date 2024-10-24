@@ -8,7 +8,7 @@ const uploadImages = catchAsync(async (req, res, next) => {
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
-    message: "Successflly uploaded the images",
+    message: "Successfully uploaded the images",
     data: result,
   });
 });
@@ -18,7 +18,7 @@ const getImages = catchAsync(async (req, res, next) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Successflly retrieved the images",
+    message: "Successfully retrieved the images",
     data: result,
   });
 });
@@ -28,7 +28,7 @@ const getImage = catchAsync(async (req, res, next) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Successflly retrieved the image",
+    message: "Successfully retrieved the image",
     data: result,
   });
 });
@@ -38,7 +38,7 @@ const changeImageName = catchAsync(async (req, res, next) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Successflly updated the image name",
+    message: "Successfully updated the image name",
     data: result,
   });
 });
@@ -48,7 +48,7 @@ const deleteImages = catchAsync(async (req, res, next) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Successflly deleted the images",
+    message: "Successfully deleted the images",
     data: result,
   });
 });
