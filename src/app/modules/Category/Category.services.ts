@@ -3,6 +3,9 @@ import ApiError from "../../error/ApiError";
 import prisma from "../../shared/prisma";
 import { generateSlug } from "../../utils/generateSlug";
 import { TAddCategoryPayload } from "./Category.interfaces";
+import pagination from "../../utils/pagination";
+import { Prisma } from "@prisma/client";
+import { categorySearchableFields } from "./Category.constants";
 
 const addCategory = async (payload: TAddCategoryPayload) => {
   if (payload.parent_id) {
@@ -30,6 +33,68 @@ const addCategory = async (payload: TAddCategoryPayload) => {
   return result;
 };
 
+const getCategories = async (query: Record<string, any>) => {
+  const { searchTerm, page, limit, sortBy, sortOrder, parent } = query;
+
+  const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+  });
+
+  const andConditions: Prisma.CategoryWhereInput[] = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      OR: categorySearchableFields.map((field) => {
+        return {
+          [field]: {
+            contains: searchTerm,
+            mode: "insensitive",
+          },
+        };
+      }),
+    });
+  }
+
+  if (parent) {
+    andConditions.push({
+      parent: {
+        title: parent,
+      },
+    });
+  }
+
+  const whereConditions = {
+    AND: andConditions,
+  };
+
+  const result = await prisma.category.findMany({
+    where: whereConditions,
+    skip: skip,
+    take: limitNumber,
+    orderBy: {
+      [sortWith]: sortSequence,
+    },
+    include: {
+      parent: true,
+    },
+  });
+
+  const total = await prisma.category.count();
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+    },
+    data: result,
+  };
+};
+
 export const CategoryServices = {
   addCategory,
+  getCategories,
 };

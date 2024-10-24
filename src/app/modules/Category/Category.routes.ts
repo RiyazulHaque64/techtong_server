@@ -7,6 +7,12 @@ import { CategoryValidations } from "./Category.validations";
 
 const router = Router();
 
+router.get(
+  "/",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  CategoryControllers.getCategories
+);
+
 router.post(
   "/add-category",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
