@@ -5,6 +5,7 @@ import { ProductRoutes } from "../modules/Product/Product.routes";
 import { ImageRoutes } from "../modules/Image/Image.routes";
 import { CategoryRoutes } from "../modules/Category/Category.routes";
 import { BrandRoutes } from "../modules/Brand/Brand.routes";
+import { AddressRoutes } from "../modules/Address/Address.routes";
 
 const router = Router();
 
@@ -28,6 +29,10 @@ const routes = [
   {
     path: "/brand",
     route: BrandRoutes,
+  },
+  {
+    path: "/address",
+    route: AddressRoutes,
   },
   {
     path: "/image",

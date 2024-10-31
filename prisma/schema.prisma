@@ -10,7 +10,7 @@ datasource db {
 model User {
   id                  String     @id @default(uuid())
   name                String
-  email               String     @unique
+  email               String?    @unique
   password            String
   contact_number      String     @unique
   profile_pic_id      String?    @unique
@@ -177,7 +177,7 @@ model Address {
   id             String  @id @default(uuid())
   user_id        String
   address        String
-  email          String
+  email          String?
   contact_number String
   city           String
   Order          Order[]
@@ -210,12 +210,13 @@ model Image {
 }
 
 model UserOTP {
-  id             String @id @default(uuid())
+  id             String   @id @default(uuid())
   name           String
-  email          String
+  email          String?
   contact_number String
-  otp            Int    @unique
+  otp            Int      @unique
   expires_at     String
+  created_at     DateTime @default(now())
 
   @@map("user_otp")
 }

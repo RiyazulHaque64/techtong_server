@@ -38,7 +38,7 @@ const createOTP = async (data: IOTPCreatePayload) => {
   const result = await prisma.userOTP.create({
     data: {
       name: data.name,
-      email: data.email,
+      email: data.email || null,
       contact_number: data.contact_number,
       otp: generatedOTP,
       expires_at: expirationTime,
@@ -79,7 +79,7 @@ const register = async (data: IRegisterPayload) => {
     const user = await tx.user.create({
       data: {
         name: storedOTP.name,
-        email: storedOTP.email,
+        email: storedOTP.email || null,
         contact_number: storedOTP.contact_number,
         password: hashedPassword,
       },
@@ -228,7 +228,9 @@ const forgotPassword = async (emailOrContactNumber: string) => {
             <p style="font-size: 20px; font-weight: bold; background-color: #3352ff; padding: 10px; color: white; border-radius: 8px">${generatedPassword}</p>
         </div>`;
 
-  await sendEmail(user.email, emailBody);
+  if (user.email) {
+    await sendEmail(user.email, emailBody);
+  }
 
   const SMSBody = `Dear ${
     user.name || "customer"
@@ -242,7 +244,7 @@ const forgotPassword = async (emailOrContactNumber: string) => {
 
   await prisma.user.update({
     where: {
-      email: user.email,
+      contact_number: user.contact_number,
     },
     data: {
       password: hashedPassword,

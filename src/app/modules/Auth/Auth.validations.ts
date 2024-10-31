@@ -6,9 +6,7 @@ const createOTPValidationSchema = z.object({
       required_error: "Name is required",
       invalid_type_error: "Name must be a text",
     }),
-    email: z
-      .string({ required_error: "Email is required" })
-      .email({ message: "Invalid email" }),
+    email: z.string().email({ message: "Invalid email" }).optional(),
     contact_number: z
       .string({ required_error: "Contact number is required" })
       .regex(/^01\d{9}$/, {

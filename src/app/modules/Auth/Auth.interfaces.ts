@@ -1,6 +1,6 @@
 export interface IOTPCreatePayload {
   name: string;
-  email: string;
+  email?: string;
   password: string;
   contact_number: string;
   profile_pic_id: string;
