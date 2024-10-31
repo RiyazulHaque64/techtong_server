@@ -3,17 +3,24 @@ import { z } from "zod";
 const addAddressValidationSchema = z.object({
   body: z
     .object({
-      name: z.string({
-        invalid_type_error: "Brand name must be a text",
-        required_error: "Brand name is required",
-      }),
-      description: z
-        .string({ invalid_type_error: "Brand description must be a text" })
+      address: z
+        .string({
+          invalid_type_error: "Address must be a text",
+        })
+        .min(1, "Address is required"),
+      email: z.string().email({ message: "Invalid email" }).optional(),
+      contact_number: z
+        .string()
+        .regex(/^01\d{9}$/, {
+          message:
+            "Contact number must be a valid Bangladeshi number with 11 digits",
+        })
         .optional(),
-      icon: z
-        .string({ invalid_type_error: "Brand icon must be an URL" })
-        .url("Brand icon must be a valid URL")
-        .optional(),
+      city: z
+        .string({
+          invalid_type_error: "City must be a text",
+        })
+        .min(1, "City is required"),
     })
     .strict(),
 });

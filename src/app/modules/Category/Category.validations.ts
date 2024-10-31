@@ -3,10 +3,11 @@ import { z } from "zod";
 const addCategoryValidationSchema = z.object({
   body: z
     .object({
-      title: z.string({
-        invalid_type_error: "Category title must be a text",
-        required_error: "Category title is required",
-      }),
+      title: z
+        .string({
+          invalid_type_error: "Category title must be a text",
+        })
+        .min(1, "Category title is required"),
       description: z
         .string({ invalid_type_error: "Category description must be a text" })
         .optional(),

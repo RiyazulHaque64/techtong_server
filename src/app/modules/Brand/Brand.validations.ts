@@ -3,10 +3,11 @@ import { z } from "zod";
 const addBrandValidationSchema = z.object({
   body: z
     .object({
-      name: z.string({
-        invalid_type_error: "Brand name must be a text",
-        required_error: "Brand name is required",
-      }),
+      name: z
+        .string({
+          invalid_type_error: "Brand name must be a text",
+        })
+        .min(1, "Brand name is required"),
       description: z
         .string({ invalid_type_error: "Brand description must be a text" })
         .optional(),

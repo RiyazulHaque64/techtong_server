@@ -32,16 +32,16 @@ const registerValidationSchema = z.object({
 
 const loginValidationSchema = z.object({
   body: z.object({
-    emailOrContactNumber: z.string({
-      required_error: "Email or contact number is required",
-    }),
+    emailOrContactNumber: z
+      .string()
+      .min(1, { message: "Email or contact number is required" }),
     password: z.string({ required_error: "Password is required" }),
   }),
 });
 
 const resetPasswordValidationSchema = z.object({
   body: z.object({
-    oldPassword: z.string({ required_error: "Old password is required" }),
+    oldPassword: z.string().min(6, "Old valid password is required"),
     newPassword: z
       .string({ required_error: "New password is required" })
       .min(6, { message: "password must be at least 6 characters long" })
