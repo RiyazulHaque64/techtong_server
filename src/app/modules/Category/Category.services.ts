@@ -100,7 +100,7 @@ const getCategories = async (query: Record<string, any>) => {
     },
   });
 
-  const total = await prisma.category.count();
+  const total = await prisma.category.count({ where: whereConditions });
 
   return {
     meta: {

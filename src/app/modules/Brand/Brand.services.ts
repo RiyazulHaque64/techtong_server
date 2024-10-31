@@ -75,7 +75,7 @@ const getBrands = async (query: Record<string, any>) => {
     },
   });
 
-  const total = await prisma.brand.count();
+  const total = await prisma.brand.count({ where: whereConditions });
 
   return {
     meta: {

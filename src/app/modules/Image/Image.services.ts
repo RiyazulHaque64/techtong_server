@@ -100,7 +100,7 @@ const getImages = async (query: Record<string, any>) => {
     },
   });
 
-  const total = await prisma.image.count();
+  const total = await prisma.image.count({ where: whereConditions });
 
   return {
     meta: {

@@ -25,7 +25,8 @@ model User {
   Card                Card[]
   Review              Review[]
 
-  profile_pic Image? @relation(fields: [profile_pic_id], references: [id])
+  profile_pic Image?    @relation(fields: [profile_pic_id], references: [id])
+  address     Address[]
 
   @@map("users")
 }
@@ -181,6 +182,8 @@ model Address {
   contact_number String
   city           String
   Order          Order[]
+
+  user User @relation(fields: [user_id], references: [id])
 
   @@map("addresses")
 }

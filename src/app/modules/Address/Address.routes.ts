@@ -14,4 +14,10 @@ router.post(
   AddressControllers.addAddress
 );
 
+router.get(
+  "/",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  AddressControllers.getAddresses
+);
+
 export const AddressRoutes = router;

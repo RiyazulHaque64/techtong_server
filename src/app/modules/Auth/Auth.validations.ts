@@ -11,7 +11,7 @@ const createOTPValidationSchema = z.object({
       .string({ required_error: "Contact number is required" })
       .regex(/^01\d{9}$/, {
         message:
-          "Contact number must be a valid Bangladeshi number with 11 digits",
+          "Contact number must be a valid Bangladeshi number like as 01511111111",
       }),
   }),
 });
