@@ -14,5 +14,17 @@ router.post(
   validateRequest(BrandValidations.addBrandValidationSchema),
   BrandControllers.addBrand
 );
+router.get("/:id", BrandControllers.getBrand);
+router.patch(
+  "/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(BrandValidations.updateBrandValidationSchema),
+  BrandControllers.updateBrand
+);
+router.delete(
+  "/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  BrandControllers.deleteBrand
+);
 
 export const BrandRoutes = router;

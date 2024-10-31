@@ -87,7 +87,41 @@ const getBrands = async (query: Record<string, any>) => {
   };
 };
 
+const getBrand = async (id: string) => {
+  const result = await prisma.brand.findUniqueOrThrow({
+    where: {
+      id,
+    },
+  });
+  return result;
+};
+
+const updateBrand = async (id: string, payload: TBrandPayload) => {
+  if (payload.name) {
+    payload.slug = generateSlug(payload.name);
+  }
+  const result = await prisma.brand.update({
+    where: {
+      id,
+    },
+    data: payload,
+  });
+  return result;
+};
+
+const deleteBrand = async (id: string) => {
+  const result = await prisma.brand.delete({
+    where: {
+      id,
+    },
+  });
+  return result;
+};
+
 export const BrandServices = {
   addBrand,
   getBrands,
+  getBrand,
+  updateBrand,
+  deleteBrand,
 };

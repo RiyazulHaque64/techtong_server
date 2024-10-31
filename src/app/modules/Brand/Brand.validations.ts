@@ -18,6 +18,26 @@ const addBrandValidationSchema = z.object({
     .strict(),
 });
 
+const updateBrandValidationSchema = z.object({
+  body: z
+    .object({
+      name: z
+        .string({
+          invalid_type_error: "Brand name must be a text",
+        })
+        .optional(),
+      description: z
+        .string({ invalid_type_error: "Brand description must be a text" })
+        .optional(),
+      icon: z
+        .string({ invalid_type_error: "Brand icon must be an URL" })
+        .url("Brand icon must be a valid URL")
+        .optional(),
+    })
+    .strict(),
+});
+
 export const BrandValidations = {
   addBrandValidationSchema,
+  updateBrandValidationSchema,
 };
