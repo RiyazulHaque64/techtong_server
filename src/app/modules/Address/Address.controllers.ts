@@ -19,9 +19,9 @@ const addAddress = catchAsync(
   }
 );
 
-const getAddresses = catchAsync(async (req, res, next) => {
+const getAllAddresses = catchAsync(async (req, res, next) => {
   const filteredQuery = pick(req.query, addressFilterableFields);
-  const result = await AddressServices.getAddresses(filteredQuery);
+  const result = await AddressServices.getAllAddresses(filteredQuery);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -30,7 +30,70 @@ const getAddresses = catchAsync(async (req, res, next) => {
   });
 });
 
+const getMyAddresses = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const filteredQuery = pick(req.query, addressFilterableFields);
+    const result = await AddressServices.getMyAddresses(
+      req.user,
+      filteredQuery
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Your addresses have been successfully retrieved",
+      data: result,
+    });
+  }
+);
+
+const getMySingleAddresses = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const result = await AddressServices.getMySingleAddress(
+      req.user,
+      req.params.id
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Your address has been successfully retrieved",
+      data: result,
+    });
+  }
+);
+
+const updateAddress = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const result = await AddressServices.updateAddress(
+      req.user,
+      req.params.id,
+      req.body
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Your address has been successfully updated",
+      data: result,
+    });
+  }
+);
+
+const deleteAddress = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const result = await AddressServices.deleteAddress(req.user, req.params.id);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Your address has been successfully deleted",
+      data: result,
+    });
+  }
+);
+
 export const AddressControllers = {
   addAddress,
-  getAddresses,
+  getAllAddresses,
+  getMyAddresses,
+  getMySingleAddresses,
+  updateAddress,
+  deleteAddress,
 };
