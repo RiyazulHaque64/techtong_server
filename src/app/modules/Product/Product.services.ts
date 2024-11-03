@@ -184,6 +184,19 @@ const getProducts = async (query: Record<string, any>) => {
   };
 };
 
+const getSingleProduct = async (id: string) => {
+  const result = await prisma.product.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    include: {
+      brand: true,
+      category: true,
+    },
+  });
+  return result;
+};
+
 const updateProduct = async (id: string, payload: IProductPayload) => {
   if (payload.name) {
     payload.slug = generateSlug(payload.name);
@@ -202,4 +215,5 @@ export const ProductServices = {
   addProduct,
   updateProduct,
   getProducts,
+  getSingleProduct,
 };
