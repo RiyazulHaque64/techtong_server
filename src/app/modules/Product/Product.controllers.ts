@@ -15,6 +15,16 @@ const addProduct = catchAsync(async (req, res, next) => {
   });
 });
 
+const getProducts = catchAsync(async (req, res, next) => {
+  const result = await ProductServices.getProducts(req.query);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Products have been successfully retrieved",
+    data: result,
+  });
+});
+
 const updateProduct = catchAsync(async (req, res, next) => {
   const result = await ProductServices.updateProduct(req.params.id, req.body);
   sendResponse(res, {
@@ -28,4 +38,5 @@ const updateProduct = catchAsync(async (req, res, next) => {
 export const ProductControllers = {
   addProduct,
   updateProduct,
+  getProducts,
 };

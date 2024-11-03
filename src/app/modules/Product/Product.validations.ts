@@ -181,7 +181,7 @@ const updateProductValidationSchema = z.object({
         .array(z.string({ invalid_type_error: "Key feature must be a text" }))
         .optional(),
       attributes: z
-        .array(z.object({ name: z.string(), value: z.string() }))
+        .array(z.object({ slug: z.string(), value: z.string() }))
         .optional(),
       featured: z
         .boolean({ invalid_type_error: "Featured value must be true or false" })

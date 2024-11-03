@@ -7,6 +7,8 @@ import { ProductValidations } from "./Product.validations";
 
 const router = Router();
 
+router.get("/", ProductControllers.getProducts);
+
 router.post(
   "/add-product",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),

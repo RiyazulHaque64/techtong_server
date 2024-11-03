@@ -87,9 +87,10 @@ model Category {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  parent   Category?  @relation("CategoryToParent", fields: [parent_id], references: [id])
-  children Category[] @relation("CategoryToParent")
-  Product  Product[]
+  parent    Category?   @relation("CategoryToParent", fields: [parent_id], references: [id])
+  children  Category[]  @relation("CategoryToParent")
+  Product   Product[]
+  Attribute Attribute[]
 
   @@map("categories")
 }
@@ -224,6 +225,18 @@ model UserOTP {
   created_at     DateTime @default(now())
 
   @@map("user_otp")
+}
+
+model Attribute {
+  id          String   @id @default(uuid())
+  category_id String?
+  name        String
+  slug        String
+  value       String[] @default([])
+
+  category Category? @relation(fields: [category_id], references: [id])
+
+  @@map("attributes")
 }
 
 enum UserStatus {
