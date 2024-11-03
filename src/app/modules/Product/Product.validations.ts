@@ -2,38 +2,39 @@ import { z } from "zod";
 
 const addProductValidationSchema = z.object({
   body: z.object({
-    name: z.string({
-      required_error: "Product name is required",
-      invalid_type_error: "Product name must be a text",
-    }),
-    model: z.string({
-      required_error: "Product model is required",
-      invalid_type_error: "Product model must be a text",
-    }),
-    description: z.string().optional(),
-    specification: z.array(
-      z.object({
-        heading: z.string(),
-        fields: z.array(
-          z.object({ title: z.string(), value: z.array(z.string()) })
-        ),
-      })
-    ),
-    additional_information: z.string().optional(),
-    key_features: z.array(z.string()).optional(),
-    brand_id: z.string({
-      required_error: "Brand id is required",
-      invalid_type_error: "Brand id must be a text",
-    }),
-    category_id: z.string({
-      required_error: "Category id is required",
-      invalid_type_error: "Category id must be a text",
-    }),
-    type: z
+    name: z
       .string({
-        invalid_type_error: "Product type must be a text",
+        required_error: "Product name is required",
+        invalid_type_error: "Product name must be a text",
       })
+      .min(1, "Product name is required"),
+    model: z
+      .string({
+        required_error: "Product model is required",
+        invalid_type_error: "Product model must be a text",
+      })
+      .min(1, "Product model is required"),
+    brand_id: z
+      .string({
+        required_error: "Brand id is required",
+        invalid_type_error: "Brand id must be a text",
+      })
+      .regex(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+        "Invalid ID"
+      )
       .optional(),
+    category_id: z
+      .string({
+        required_error: "Category id is required",
+        invalid_type_error: "Category id must be a text",
+      })
+      .regex(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+        "Invalid ID"
+      )
+      .optional(),
+
     tags: z.array(z.string()).optional(),
     code: z
       .string({
@@ -64,9 +65,31 @@ const addProductValidationSchema = z.object({
       .optional(),
     thumbnail: z
       .string({ invalid_type_error: "Thumbnail must be an URL" })
+      .url("Thumbnail must be a valid URL")
       .optional(),
     images: z
-      .array(z.string({ invalid_type_error: "Image must be an URL" }))
+      .array(
+        z
+          .string({ invalid_type_error: "Image must be an URL" })
+          .url("Invalid image URL detected")
+      )
+      .optional(),
+    description: z
+      .string({ invalid_type_error: "Description must be a text or HTML" })
+      .optional(),
+    specification: z
+      .string({ invalid_type_error: "Specification must be a text or HTML" })
+      .optional(),
+    additional_information: z
+      .string({
+        invalid_type_error: "Additional information must be a text or HTML",
+      })
+      .optional(),
+    key_features: z
+      .array(z.string({ invalid_type_error: "Key feature must be a text" }))
+      .optional(),
+    attributes: z
+      .array(z.object({ name: z.string(), value: z.string() }))
       .optional(),
   }),
 });
