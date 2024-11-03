@@ -1,19 +1,9 @@
-export interface IAddProductPayload {
+export interface IProductPayload {
   name: string;
   model: string;
-  description?: string;
-  specification: {
-    heading: string;
-    fields: {
-      title: string;
-      value: string[];
-    }[];
-  }[];
-  additional_information?: string;
-  key_features?: string[];
-  brand_id: string;
-  category_id: string;
-  type?: string;
+  slug: string;
+  brand_id?: string;
+  category_id?: string;
   tags?: string[];
   code: string;
   stock?: number;
@@ -22,4 +12,9 @@ export interface IAddProductPayload {
   retailer_price?: number;
   thumbnail?: string;
   images?: string[];
+  description?: string;
+  specification?: string;
+  additional_information?: string;
+  key_features?: string[];
+  attributes?: [{ name: string; value: string }];
 }

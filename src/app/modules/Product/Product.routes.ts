@@ -14,4 +14,11 @@ router.post(
   ProductControllers.addProduct
 );
 
+router.patch(
+  "/update-product/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(ProductValidations.updateProductValidationSchema),
+  ProductControllers.updateProduct
+);
+
 export const ProductRoutes = router;
