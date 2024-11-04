@@ -21,6 +21,9 @@ const addAttribute = async (payload: TAttributePayload) => {
 
   const result = await prisma.attribute.create({
     data: payload,
+    include: {
+      category: true,
+    },
   });
 
   return result;

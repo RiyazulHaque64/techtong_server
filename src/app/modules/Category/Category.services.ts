@@ -151,12 +151,12 @@ const updateCategory = async (id: string, payload: TCategoryPayload) => {
 };
 
 const deleteCategory = async (id: string) => {
-  const result = await prisma.category.delete({
+  await prisma.category.delete({
     where: {
       id,
     },
   });
-  return result;
+  return null;
 };
 
 export const CategoryServices = {

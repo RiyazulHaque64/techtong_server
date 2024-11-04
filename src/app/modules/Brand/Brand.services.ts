@@ -110,12 +110,12 @@ const updateBrand = async (id: string, payload: TBrandPayload) => {
 };
 
 const deleteBrand = async (id: string) => {
-  const result = await prisma.brand.delete({
+  await prisma.brand.delete({
     where: {
       id,
     },
   });
-  return result;
+  return null;
 };
 
 export const BrandServices = {

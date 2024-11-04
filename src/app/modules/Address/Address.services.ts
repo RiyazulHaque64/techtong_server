@@ -255,12 +255,12 @@ const deleteAddress = async (user: TAuthUser | undefined, id: string) => {
   if (address.user_id !== user?.id) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Address not found");
   }
-  const result = await prisma.address.delete({
+  await prisma.address.delete({
     where: {
       id,
     },
   });
-  return result;
+  return null;
 };
 
 export const AddressServices = {

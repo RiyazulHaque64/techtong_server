@@ -20,10 +20,10 @@ model User {
   password_changed_at DateTime   @default(now())
   created_at          DateTime   @default(now())
   updated_at          DateTime   @updatedAt
-  Cart                Cart?
-  Order               Order[]
-  Card                Card[]
-  Review              Review[]
+  cart                Cart?
+  orders              Order[]
+  cards               Card[]
+  reviews             Review[]
 
   profile_pic Image?    @relation(fields: [profile_pic_id], references: [id])
   address     Address[]
@@ -55,8 +55,8 @@ model Product {
   attributes             Json?
   created_at             DateTime    @default(now())
   updated_at             DateTime    @updatedAt
-  OrderItem              OrderItem[]
-  Review                 Review[]
+  orderItems             OrderItem[]
+  reviews                Review[]
 
   brand    Brand?    @relation(fields: [brand_id], references: [id])
   category Category? @relation(fields: [category_id], references: [id])
@@ -72,7 +72,7 @@ model Brand {
   description String?
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
-  Product     Product[]
+  products    Product[]
 
   @@map("brands")
 }
@@ -87,22 +87,22 @@ model Category {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  parent    Category?   @relation("CategoryToParent", fields: [parent_id], references: [id])
-  children  Category[]  @relation("CategoryToParent")
-  Product   Product[]
-  Attribute Attribute[]
+  parent     Category?   @relation("CategoryToParent", fields: [parent_id], references: [id])
+  children   Category[]  @relation("CategoryToParent")
+  products   Product[]
+  attributes Attribute[]
 
   @@map("categories")
 }
 
 model Cart {
   id         String     @id @default(uuid())
-  user_id    String?    @unique
+  user_id    String     @unique
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
-  CartItem   CartItem[]
+  cart_items CartItem[]
 
-  user User? @relation(fields: [user_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
 
   @@map("carts")
 }
@@ -131,10 +131,10 @@ model Order {
   coupon_id       String?       @unique
   comment         String?
 
-  user      User?       @relation(fields: [user_id], references: [id])
-  address   Address     @relation(fields: [address_id], references: [id])
-  coupon    Coupon?     @relation(fields: [coupon_id], references: [id])
-  OrderItem OrderItem[]
+  user        User?       @relation(fields: [user_id], references: [id])
+  address     Address     @relation(fields: [address_id], references: [id])
+  coupon      Coupon?     @relation(fields: [coupon_id], references: [id])
+  order_items OrderItem[]
 
   @@map("orders")
 }
@@ -172,7 +172,7 @@ model Coupon {
   expires_in     DateTime
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
-  Order          Order?
+  order          Order?
 
   @@map("coupons")
 }
@@ -184,7 +184,7 @@ model Address {
   email          String?
   contact_number String
   city           String
-  Order          Order[]
+  orders         Order[]
 
   user User @relation(fields: [user_id], references: [id])
 
