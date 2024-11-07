@@ -20,4 +20,10 @@ router.post(
   CartControllers.addToCart
 );
 
+router.delete(
+  "/:cartItemId",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),
+  CartControllers.deleteToCart
+);
+
 export const CartRoutes = router;

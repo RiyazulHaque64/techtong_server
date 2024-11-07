@@ -99,4 +99,34 @@ const getCart = async (user: TAuthUser | undefined) => {
   };
 };
 
-export const CartServices = { addToCart, getCart };
+const deleteToCart = async (
+  user: TAuthUser | undefined,
+  cartItemId: string
+) => {
+  if (!user) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized");
+  }
+
+  const cartItem = await prisma.cartItem.findUniqueOrThrow({
+    where: {
+      id: cartItemId,
+    },
+    include: {
+      cart: true,
+    },
+  });
+
+  if (cartItem.cart.user_id !== user.id) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Cart item not found");
+  }
+
+  await prisma.cartItem.delete({
+    where: {
+      id: cartItemId,
+    },
+  });
+
+  return null;
+};
+
+export const CartServices = { addToCart, getCart, deleteToCart };
