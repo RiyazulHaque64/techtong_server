@@ -17,6 +17,19 @@ const addToCart = catchAsync(
   }
 );
 
+const getCart = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const result = await CartServices.getCart(req.user);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Cart retrieved successfully",
+      data: result,
+    });
+  }
+);
+
 export const CartControllers = {
   addToCart,
+  getCart,
 };

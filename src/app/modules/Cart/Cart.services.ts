@@ -1,11 +1,16 @@
+import httpStatus from "http-status";
+import ApiError from "../../error/ApiError";
 import { TAuthUser } from "../../interfaces/common";
 import prisma from "../../shared/prisma";
-import { TAddToCartPayload } from "./Cart.interfaces";
+import { TAddToCartPayload, TCartItem } from "./Cart.interfaces";
 
 const addToCart = async (
   user: TAuthUser | undefined,
   payload: TAddToCartPayload
 ) => {
+  if (!user) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized");
+  }
   const product = await prisma.product.findUniqueOrThrow({
     where: {
       id: payload.product_id,
@@ -14,13 +19,13 @@ const addToCart = async (
 
   let cart = await prisma.cart.findFirst({
     where: {
-      user_id: user?.id,
+      user_id: user.id,
     },
   });
   if (!cart) {
     cart = await prisma.cart.create({
       data: {
-        user_id: user?.id,
+        user_id: user.id,
       },
     });
   }
@@ -63,4 +68,35 @@ const addToCart = async (
   return cartItem;
 };
 
-export const CartServices = { addToCart };
+const getCart = async (user: TAuthUser | undefined) => {
+  if (!user) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized");
+  }
+
+  const cart = await prisma.cart.findUniqueOrThrow({
+    where: {
+      user_id: user.id,
+    },
+    include: {
+      cart_items: true,
+    },
+  });
+
+  const cartItemsWithTotal = cart?.cart_items.map((item: TCartItem) => ({
+    ...item,
+    total: item.quantity * item.price,
+  }));
+
+  const cartTotal = cartItemsWithTotal.reduce(
+    (acc: number, item: TCartItem & { total: number }) => acc + item.total,
+    0
+  );
+
+  return {
+    ...cart,
+    cart_total: cartTotal,
+    cart_items: cartItemsWithTotal,
+  };
+};
+
+export const CartServices = { addToCart, getCart };

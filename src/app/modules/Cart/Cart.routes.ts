@@ -7,6 +7,12 @@ import { CartValidations } from "./Cart.validations";
 
 const router = Router();
 
+router.get(
+  "/",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),
+  CartControllers.getCart
+);
+
 router.post(
   "/add-to-cart",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),
