@@ -120,21 +120,25 @@ model CartItem {
 }
 
 model Order {
-  id              String        @id @default(uuid())
-  user_id         String?
-  total_price     Int
-  discount_amount Int           @default(0)
-  address_id      String
-  order_status    OrderStatus   @default(PENDING)
-  payment_method  String
-  payment_status  PaymentStatus @default(DUE)
-  coupon_id       String?       @unique
-  comment         String?
+  id               String         @id @default(uuid())
+  user_id          String?
+  customer_info_id String
+  payment_method   PaymentMethod  @default(CASH_ON_DELIVERY)
+  delivery_method  DeliveryMethod @default(HOME_DELIVERY)
+  order_status     OrderStatus    @default(PENDING)
+  payment_status   PaymentStatus  @default(DUE)
+  delivery_charge  Int
+  discount_amount  Int            @default(0)
+  sub_amount       Int
+  total_amount     Int
+  payable_amount   Int
+  coupon_id        String?        @unique
+  comment          String?
 
-  user        User?       @relation(fields: [user_id], references: [id])
-  address     Address     @relation(fields: [address_id], references: [id])
-  coupon      Coupon?     @relation(fields: [coupon_id], references: [id])
-  order_items OrderItem[]
+  user          User?        @relation(fields: [user_id], references: [id])
+  coupon        Coupon?      @relation(fields: [coupon_id], references: [id])
+  customer_info CustomerInfo @relation(fields: [customer_info_id], references: [id])
+  order_items   OrderItem[]
 
   @@map("orders")
 }
@@ -184,11 +188,22 @@ model Address {
   email          String?
   contact_number String
   city           String
-  orders         Order[]
 
   user User @relation(fields: [user_id], references: [id])
 
   @@map("addresses")
+}
+
+model CustomerInfo {
+  id             String  @id @default(uuid())
+  name           String
+  address        String
+  contact_number String  @unique
+  email          String?
+  city           String
+  order          Order[]
+
+  @@map("customers_info")
 }
 
 model Card {
@@ -257,6 +272,16 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  ONLINE_PAYMENT
+}
+
+enum DeliveryMethod {
+  STORE_PICKUP
+  HOME_DELIVERY
 }
 
 enum PaymentStatus {

@@ -2,10 +2,12 @@ import { z } from "zod";
 
 const createOTPValidationSchema = z.object({
   body: z.object({
-    name: z.string({
-      required_error: "Name is required",
-      invalid_type_error: "Name must be a text",
-    }),
+    name: z
+      .string({
+        required_error: "Name is required",
+        invalid_type_error: "Name must be a text",
+      })
+      .min(1, "Name is required"),
     email: z.string().email({ message: "Invalid email" }).optional(),
     contact_number: z
       .string({ required_error: "Contact number is required" })
