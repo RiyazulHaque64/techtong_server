@@ -8,6 +8,12 @@ import { OrderValidations } from "./Order.validations";
 const router = Router();
 
 router.post(
+  "/create-order",
+  validateRequest(OrderValidations.createOrderForGuestUserValidationSchema),
+  OrderControllers.createOrderForGuestUser
+);
+
+router.post(
   "/create-order-for-user",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),
   validateRequest(

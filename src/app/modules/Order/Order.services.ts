@@ -1,7 +1,11 @@
 import { Coupon, DeliveryMethod, PaymentMethod } from "@prisma/client";
 import { TAuthUser } from "../../interfaces/common";
 import prisma from "../../shared/prisma";
-import { TCreateOrderForRegisteredUser } from "./Order.interfaces";
+import {
+  TCreateOrderForGuestUser,
+  TCreateOrderForRegisteredUser,
+  TOrderItem,
+} from "./Order.interfaces";
 import { HOME_DELIVERY_CHARGE } from "./Order.constants";
 import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
@@ -131,8 +135,117 @@ const createOrderForRegisteredUser = async (
   return result;
 };
 
-const createOrderForGuestUser = async (data: TCreateOrderForRegisteredUser) => {
-  return null;
+const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
+  const {
+    customer_information,
+    order_items,
+    coupon_id,
+    delivery_method,
+    payment_method,
+    comment,
+  } = data;
+
+  const productIds = order_items.map((item: TOrderItem) => item.product_id);
+
+  const products = await prisma.product.findMany({
+    where: {
+      id: {
+        in: productIds,
+      },
+    },
+  });
+
+  if (products.length === 0) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "No product found to create order"
+    );
+  }
+
+  let coupon: Coupon | null;
+  let discountAmount = 0;
+  if (coupon_id) {
+    coupon = await prisma.coupon.findUniqueOrThrow({
+      where: {
+        id: coupon_id,
+      },
+    });
+    discountAmount = coupon.discount_value;
+  }
+
+  const itemsToCreateOrder = products.map((product) => {
+    const item = order_items.find((item) => item.product_id === product.id);
+    return {
+      product_id: product.id,
+      quantity: item?.quantity || 1,
+      price: product.price,
+    };
+  });
+  const subAmount = itemsToCreateOrder.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+  const totalAmount = subAmount - discountAmount;
+  const deliveryCharge =
+    delivery_method === DeliveryMethod.STORE_PICKUP ? 0 : HOME_DELIVERY_CHARGE;
+  const payableAmount = totalAmount + deliveryCharge;
+
+  const customerInfo = {
+    name: customer_information.name,
+    email: customer_information.email || null,
+    contact_number: customer_information.contact_number,
+    address: customer_information.address,
+    city: customer_information.city,
+  };
+
+  const orderInfo = {
+    payment_method: payment_method || PaymentMethod.CASH_ON_DELIVERY,
+    delivery_method: delivery_method || DeliveryMethod.HOME_DELIVERY,
+    delivery_charge: deliveryCharge,
+    discount_amount: discountAmount,
+    sub_amount: subAmount,
+    total_amount: totalAmount,
+    payable_amount: payableAmount,
+    coupon_id: coupon_id || null,
+    comment: comment || null,
+  };
+
+  const result = await prisma.$transaction(async (tx) => {
+    const customerInformation = await tx.customerInfo.upsert({
+      where: {
+        contact_number: customerInfo.contact_number,
+      },
+      create: customerInfo,
+      update: {
+        address: customerInfo.address,
+        city: customerInfo.city,
+      },
+    });
+
+    const order = await tx.order.create({
+      data: {
+        ...orderInfo,
+        customer_info_id: customerInformation.id,
+        order_items: {
+          create: itemsToCreateOrder,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            ...userSelectedFields,
+          },
+        },
+        customer_info: true,
+        order_items: true,
+        coupon: true,
+      },
+    });
+
+    return order;
+  });
+
+  return result;
 };
 
 export const OrderServices = {

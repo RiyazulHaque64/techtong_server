@@ -13,3 +13,23 @@ export type TCreateOrderForRegisteredUser = {
   coupon_id?: string;
   comment?: string;
 };
+
+export type TCreateOrderForGuestUser = {
+  customer_information: {
+    name: string;
+    email?: string;
+    contact_number: string;
+    address: string;
+    city: string;
+  };
+  order_items: TOrderItem[];
+  payment_method?: PaymentMethod;
+  delivery_method?: DeliveryMethod;
+  coupon_id?: string;
+  comment?: string;
+};
+
+export type TOrderItem = {
+  product_id: string;
+  quantity: number;
+};

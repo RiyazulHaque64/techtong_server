@@ -119,3 +119,16 @@ const slug = category
   .replace(/[^\w-]+/g, "");
 
 console.log(slug);
+
+const createItems = [
+  {
+    product_id: 1,
+    quantity: 2,
+    price: 2300,
+  },
+  {
+    product_id: 2,
+    quantity: 1,
+    price: 1200,
+  },
+];

@@ -55,6 +55,78 @@ const createOrderForRegisteredUserValidationSchema = z.object({
     .strict(),
 });
 
+const createOrderForGuestUserValidationSchema = z.object({
+  body: z
+    .object({
+      customer_information: z
+        .object({
+          name: z
+            .string({
+              required_error: "Name is required",
+              invalid_type_error: "Name must be a text",
+            })
+            .min(1, "Name is required"),
+          email: z.string().email({ message: "Invalid email" }).optional(),
+          contact_number: z
+            .string({ required_error: "Contact number is required" })
+            .regex(/^01\d{9}$/, {
+              message:
+                "Contact number must be a valid Bangladeshi number like as 01511111111",
+            }),
+          address: z
+            .string({
+              invalid_type_error: "Address must be a text",
+            })
+            .min(1, "Address is required"),
+          city: z
+            .string({
+              invalid_type_error: "City must be a text",
+            })
+            .min(1, "City is required"),
+        })
+        .strict(),
+      order_items: z
+        .array(
+          z
+            .object({
+              product_id: z
+                .string({
+                  invalid_type_error: "Product id must be a text",
+                })
+                .regex(
+                  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+                  "Invalid Product"
+                ),
+              quantity: z
+                .number({ required_error: "Quantity is required" })
+                .nonnegative({ message: "Quantity must be a positive number" }),
+            })
+            .strict()
+        )
+        .nonempty("Order items are required"),
+      payment_method: z
+        .enum(Object.values(PaymentMethod) as [string, ...string[]])
+        .optional(),
+      delivery_method: z
+        .enum(Object.values(DeliveryMethod) as [string, ...string[]])
+        .optional(),
+      coupon_id: z
+        .string({
+          invalid_type_error: "Coupon id must be a text",
+        })
+        .regex(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+          "Invalid Coupon"
+        )
+        .optional(),
+      comment: z
+        .string({ invalid_type_error: "Comment must be a text" })
+        .optional(),
+    })
+    .strict(),
+});
+
 export const OrderValidations = {
   createOrderForRegisteredUserValidationSchema,
+  createOrderForGuestUserValidationSchema,
 };

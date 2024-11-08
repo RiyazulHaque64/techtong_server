@@ -20,6 +20,17 @@ const createOrderForRegisteredUser = catchAsync(
   }
 );
 
+const createOrderForGuestUser = catchAsync(async (req: Request, res, next) => {
+  const result = await OrderServices.createOrderForGuestUser(req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Order created successfully",
+    data: result,
+  });
+});
+
 export const OrderControllers = {
   createOrderForRegisteredUser,
+  createOrderForGuestUser,
 };
