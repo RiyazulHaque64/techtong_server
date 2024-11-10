@@ -43,16 +43,10 @@ const getAllAddresses = async (query: Record<string, any>) => {
     query;
 
   if (sortBy) {
-    const res = fieldValidityChecker(addressSortableFields, sortBy);
-    if (!res.valid) {
-      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
-    }
+    fieldValidityChecker(addressSortableFields, sortBy);
   }
   if (sortOrder) {
-    const res = fieldValidityChecker(sortOrderType, sortOrder);
-    if (!res.valid) {
-      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
-    }
+    fieldValidityChecker(sortOrderType, sortOrder);
   }
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
@@ -125,16 +119,10 @@ const getMyAddresses = async (
     query;
 
   if (sortBy) {
-    const res = fieldValidityChecker(addressSortableFields, sortBy);
-    if (!res.valid) {
-      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
-    }
+    fieldValidityChecker(addressSortableFields, sortBy);
   }
   if (sortOrder) {
-    const res = fieldValidityChecker(sortOrderType, sortOrder);
-    if (!res.valid) {
-      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
-    }
+    fieldValidityChecker(sortOrderType, sortOrder);
   }
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({

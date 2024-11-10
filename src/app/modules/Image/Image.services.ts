@@ -53,16 +53,10 @@ const getImages = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder } = query;
 
   if (sortBy) {
-    const res = fieldValidityChecker(imageSortableFields, sortBy);
-    if (!res.valid) {
-      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
-    }
+    fieldValidityChecker(imageSortableFields, sortBy);
   }
   if (sortOrder) {
-    const res = fieldValidityChecker(sortOrderType, sortOrder);
-    if (!res.valid) {
-      throw new ApiError(httpStatus.BAD_REQUEST, res.message);
-    }
+    fieldValidityChecker(sortOrderType, sortOrder);
   }
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({

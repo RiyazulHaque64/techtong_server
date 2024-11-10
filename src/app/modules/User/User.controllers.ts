@@ -50,7 +50,7 @@ const updateProfile = catchAsync(
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Profile retrieved is successful",
+      message: "Profile updated is successful",
       data: result,
     });
   }
