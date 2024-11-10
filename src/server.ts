@@ -1,6 +1,8 @@
 import { Server } from "http";
 import app from "./app";
 import config from "./config";
+import cron from "node-cron";
+import clearOldOTPs from "./app/utils/clearOldOTPs";
 
 const port = config.port || 9000;
 
@@ -11,6 +13,11 @@ async function main() {
     // await seedSuperAdmin();
     server = app.listen(port, () => {
       console.log(`Techtong server is running on port ${port}`);
+    });
+
+    // cron schedule to clear OTP
+    cron.schedule("0 12 * * *", () => {
+      clearOldOTPs();
     });
   } catch (error) {
     console.log(error);
