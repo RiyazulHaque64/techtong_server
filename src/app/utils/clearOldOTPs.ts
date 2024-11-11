@@ -10,7 +10,7 @@ const clearOldOTPs = async () => {
         },
       },
     });
-    console.log(`Deleted ${deletedOtps.count} old OTPs`);
+    console.log(`${deletedOtps.count} old OTPs deleted`);
   } catch (error) {
     console.error("Error deleting old OTPs:", error);
   }

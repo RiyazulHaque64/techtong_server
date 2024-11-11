@@ -1,8 +1,11 @@
+import { BeneficiaryType, DiscountType } from "@prisma/client";
+import { sortOrderType } from "../../constants/common";
+
 export const couponSortableFields = [
   "id",
   "code",
   "discount_type",
-  "dicount_value",
+  "discount_value",
   "maximum_value",
   "expiration_date",
   "usage_limit",
@@ -15,19 +18,25 @@ export const couponSortableFields = [
   "updated_at",
 ];
 
-export const couponSearchableFields = ["code", "discount_value"];
+export const couponSearchableFields = ["code"];
 
 export const couponFilterableFields = [
   "discount_type",
-  "benificiary_type",
+  "beneficiary_type",
   "is_active",
-  "min_value",
-  "max_value",
-  "from_expiration_date",
-  "to_expiration_date",
+  "minValue",
+  "maxValue",
   "searchTerm",
   "page",
   "limit",
   "sortBy",
   "sortOrder",
 ];
+
+export const couponFieldsValidationConfig: Record<string, any> = {
+  discount_type: Object.values(DiscountType),
+  beneficiary_type: Object.values(BeneficiaryType),
+  is_active: ["true", "false"],
+  sort_by: couponSortableFields,
+  sort_order: sortOrderType,
+};

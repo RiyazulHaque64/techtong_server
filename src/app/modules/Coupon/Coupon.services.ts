@@ -1,14 +1,13 @@
 import { Prisma } from "@prisma/client";
-import { sortOrderType } from "../../constants/common";
 import prisma from "../../shared/prisma";
-import fieldValidityChecker from "../../utils/fieldValidityChecker";
 import pagination from "../../utils/pagination";
 import {
+  couponFieldsValidationConfig,
   couponSearchableFields,
-  couponSortableFields,
 } from "./Coupon.constants";
 import { TCouponPayload } from "./Coupon.interfaces";
 import addFilter from "../../utils/addFilter";
+import validateQueryFields from "../../utils/validateQueryFields";
 
 const createCoupon = async (payload: TCouponPayload) => {
   const { start_date, expiration_date, ...remainingField } = payload;
@@ -37,15 +36,15 @@ const getCoupons = async (query: Record<string, any>) => {
     limit,
     sortBy,
     sortOrder,
-    min_value,
-    max_value,
-    from_expiration_date,
-    to_expiration_date,
+    minValue,
+    maxValue,
     ...remainingQuery
   } = query;
 
-  if (sortBy) fieldValidityChecker(couponSortableFields, sortBy);
-  if (sortOrder) fieldValidityChecker(sortOrderType, sortOrder);
+  if (sortBy)
+    validateQueryFields(couponFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(couponFieldsValidationConfig, "sort_order", sortOrder);
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -70,42 +69,32 @@ const getCoupons = async (query: Record<string, any>) => {
   }
 
   if (Object.keys(remainingQuery).length) {
-    Object.keys(remainingQuery).forEach((key) => {
+    for (const [key, value] of Object.entries(remainingQuery)) {
+      validateQueryFields(couponFieldsValidationConfig, key, value);
       andConditions.push({
-        [key]: remainingQuery[key],
+        [key]: value === "true" ? true : value === "false" ? false : value,
       });
-    });
+    }
   }
 
-  addFilter(andConditions, "discount_value", "gte", min_value);
-  addFilter(andConditions, "discount_value", "lte", max_value);
-  addFilter(
-    andConditions,
-    "expiration_date",
-    "gte",
-    from_expiration_date ? new Date(from_expiration_date) : undefined
-  );
-  addFilter(
-    andConditions,
-    "expiration_date",
-    "lte",
-    to_expiration_date ? new Date(to_expiration_date) : undefined
-  );
+  addFilter(andConditions, "discount_value", "gte", Number(minValue));
+  addFilter(andConditions, "discount_value", "lte", Number(maxValue));
 
   const whereConditions = {
     AND: andConditions,
   };
 
-  const result = await prisma.coupon.findMany({
-    where: whereConditions,
-    skip: skip,
-    take: limitNumber,
-    orderBy: {
-      [sortWith]: sortSequence,
-    },
-  });
-
-  const total = await prisma.coupon.count({ where: whereConditions });
+  const [result, total] = await Promise.all([
+    prisma.coupon.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+    }),
+    prisma.coupon.count({ where: whereConditions }),
+  ]);
 
   return {
     meta: {
@@ -117,7 +106,52 @@ const getCoupons = async (query: Record<string, any>) => {
   };
 };
 
+const updateCouponActiveStatus = async () => {
+  const now = new Date();
+
+  // Deactivate expired coupons
+  const updateExpiredCoupons = await prisma.coupon.updateMany({
+    where: {
+      is_active: true,
+      OR: [
+        {
+          start_date: {
+            gt: now,
+          },
+        },
+        {
+          expiration_date: {
+            lt: now,
+          },
+        },
+      ],
+    },
+    data: {
+      is_active: false,
+    },
+  });
+  console.log(`${updateExpiredCoupons.count} expired coupons deactivated`);
+
+  // Activate coupons that are within the start and expiration date range
+  const updateDiactiveCoupons = await prisma.coupon.updateMany({
+    where: {
+      is_active: false,
+      start_date: {
+        lte: now,
+      },
+      expiration_date: {
+        gte: now,
+      },
+    },
+    data: {
+      is_active: true,
+    },
+  });
+  console.log(`${updateDiactiveCoupons.count} diactive coupons activated`);
+};
+
 export const CouponServices = {
   createCoupon,
   getCoupons,
+  updateCouponActiveStatus,
 };

@@ -2,7 +2,7 @@ type TPaginationOptions = {
   page?: number;
   limit?: number;
   sortBy?: string;
-  sortOrder?: string;
+  sortOrder?: "asc" | "desc";
 };
 const pagination = (paginationOptions: TPaginationOptions) => {
   const { page, limit, sortBy, sortOrder } = paginationOptions;

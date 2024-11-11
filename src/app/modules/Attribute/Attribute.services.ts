@@ -2,21 +2,25 @@ import prisma from "../../shared/prisma";
 import { generateSlug } from "../../utils/generateSlug";
 import { TAttributePayload } from "./Attribute.interfaces";
 import fieldValidityChecker from "../../utils/fieldValidityChecker";
-import httpStatus from "http-status";
-import ApiError from "../../error/ApiError";
 import { sortOrderType } from "../../constants/common";
-import { attributeSortableFields } from "./Attribute.constants";
+import {
+  attributeFieldsValidationConfig,
+  attributeSearchableFields,
+  attributeSortableFields,
+} from "./Attribute.constants";
 import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
+import validateQueryFields from "../../utils/validateQueryFields";
 
 const addAttribute = async (payload: TAttributePayload) => {
-  if (payload.category_id) {
-    await prisma.category.findUniqueOrThrow({
-      where: {
-        id: payload.category_id,
-      },
-    });
-  }
+  if (payload.value)
+    if (payload.category_id) {
+      await prisma.category.findUniqueOrThrow({
+        where: {
+          id: payload.category_id,
+        },
+      });
+    }
   payload.slug = generateSlug(payload.name);
 
   const result = await prisma.attribute.create({
@@ -32,12 +36,14 @@ const addAttribute = async (payload: TAttributePayload) => {
 const getAttributes = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, category } = query;
 
-  if (sortBy) {
-    fieldValidityChecker(attributeSortableFields, sortBy);
-  }
-  if (sortOrder) {
-    fieldValidityChecker(sortOrderType, sortOrder);
-  }
+  if (sortBy)
+    validateQueryFields(attributeFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(
+      attributeFieldsValidationConfig,
+      "sort_order",
+      sortOrder
+    );
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -50,7 +56,7 @@ const getAttributes = async (query: Record<string, any>) => {
 
   if (searchTerm) {
     andConditions.push({
-      OR: attributeSortableFields.map((field) => {
+      OR: attributeSearchableFields.map((field) => {
         return {
           [field]: {
             contains: searchTerm,
@@ -61,23 +67,44 @@ const getAttributes = async (query: Record<string, any>) => {
     });
   }
 
+  if (category) {
+    andConditions.push({
+      category: {
+        title: {
+          equals: category,
+          mode: "insensitive",
+        },
+      },
+    });
+  }
+
   const whereConditions = {
     AND: andConditions,
   };
 
-  const result = await prisma.attribute.findMany({
-    where: whereConditions,
-    skip: skip,
-    take: limitNumber,
-    orderBy: {
-      [sortWith === "created_at" ? "name" : sortWith]: sortSequence,
-    },
-    include: {
-      category: true,
-    },
-  });
+  const orderBy: Prisma.AttributeOrderByWithRelationInput =
+    sortWith === "name" || "created_at"
+      ? {
+          name: sortSequence,
+        }
+      : {
+          category: {
+            title: sortSequence,
+          },
+        };
 
-  const total = await prisma.attribute.count({ where: whereConditions });
+  const [result, total] = await Promise.all([
+    prisma.attribute.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy,
+      include: {
+        category: true,
+      },
+    }),
+    prisma.attribute.count({ where: whereConditions }),
+  ]);
 
   return {
     meta: {

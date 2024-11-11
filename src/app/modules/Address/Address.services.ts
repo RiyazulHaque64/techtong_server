@@ -1,17 +1,16 @@
 import httpStatus from "http-status";
 import ApiError from "../../error/ApiError";
 import prisma from "../../shared/prisma";
-import fieldValidityChecker from "../../utils/fieldValidityChecker";
 import { TAuthUser } from "./../../interfaces/common";
 import {
+  addressFieldsValidationConfig,
   addressSearchableFields,
-  addressSortableFields,
 } from "./Address.constants";
 import { TAddressPayload } from "./Address.interfaces";
-import { sortOrderType } from "../../constants/common";
 import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
 import { userSelectedFields } from "../User/User.constants";
+import validateQueryFields from "../../utils/validateQueryFields";
 
 const addAddress = async (
   user: TAuthUser | undefined,
@@ -42,12 +41,10 @@ const getAllAddresses = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, ...remainingQuery } =
     query;
 
-  if (sortBy) {
-    fieldValidityChecker(addressSortableFields, sortBy);
-  }
-  if (sortOrder) {
-    fieldValidityChecker(sortOrderType, sortOrder);
-  }
+  if (sortBy)
+    validateQueryFields(addressFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(addressFieldsValidationConfig, "sort_order", sortOrder);
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -72,34 +69,35 @@ const getAllAddresses = async (query: Record<string, any>) => {
   }
 
   if (Object.keys(remainingQuery).length) {
-    Object.keys(remainingQuery).forEach((key) => {
+    for (const [key, value] of Object.entries(remainingQuery)) {
       andConditions.push({
-        [key]: remainingQuery[key],
+        [key]: value,
       });
-    });
+    }
   }
 
   const whereConditions = {
     AND: andConditions,
   };
 
-  const result = await prisma.address.findMany({
-    where: whereConditions,
-    skip: skip,
-    take: limitNumber,
-    orderBy: {
-      [sortWith === "created_at" ? "city" : sortWith]: sortSequence,
-    },
-    include: {
-      user: {
-        select: {
-          ...userSelectedFields,
+  const [result, total] = await Promise.all([
+    prisma.address.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith === "created_at" ? "city" : sortWith]: sortSequence,
+      },
+      include: {
+        user: {
+          select: {
+            ...userSelectedFields,
+          },
         },
       },
-    },
-  });
-
-  const total = await prisma.address.count({ where: whereConditions });
+    }),
+    await prisma.address.count({ where: whereConditions }),
+  ]);
 
   return {
     meta: {
@@ -118,12 +116,10 @@ const getMyAddresses = async (
   const { searchTerm, page, limit, sortBy, sortOrder, ...remainingQuery } =
     query;
 
-  if (sortBy) {
-    fieldValidityChecker(addressSortableFields, sortBy);
-  }
-  if (sortOrder) {
-    fieldValidityChecker(sortOrderType, sortOrder);
-  }
+  if (sortBy)
+    validateQueryFields(addressFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(addressFieldsValidationConfig, "sort_order", sortOrder);
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -148,34 +144,35 @@ const getMyAddresses = async (
   }
 
   if (Object.keys(remainingQuery).length) {
-    Object.keys(remainingQuery).forEach((key) => {
+    for (const [key, value] of Object.entries(remainingQuery)) {
       andConditions.push({
-        [key]: remainingQuery[key],
+        [key]: value,
       });
-    });
+    }
   }
 
   const whereConditions = {
     AND: andConditions,
   };
 
-  const result = await prisma.address.findMany({
-    where: whereConditions,
-    skip: skip,
-    take: limitNumber,
-    orderBy: {
-      [sortWith === "created_at" ? "city" : sortWith]: sortSequence,
-    },
-    include: {
-      user: {
-        select: {
-          ...userSelectedFields,
+  const [result, total] = await Promise.all([
+    prisma.address.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith === "created_at" ? "city" : sortWith]: sortSequence,
+      },
+      include: {
+        user: {
+          select: {
+            ...userSelectedFields,
+          },
         },
       },
-    },
-  });
-
-  const total = await prisma.address.count({ where: whereConditions });
+    }),
+    await prisma.address.count({ where: whereConditions }),
+  ]);
 
   return {
     meta: {

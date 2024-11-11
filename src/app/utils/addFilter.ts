@@ -9,7 +9,7 @@ const addFilter = <T extends Record<string, any>>(
     | keyof Prisma.DateTimeFilter,
   value: any
 ) => {
-  if (value !== undefined && value !== null) {
+  if (value !== undefined && value !== null && !Number.isNaN(value)) {
     conditions.push({
       [field]: {
         [operator]: value,

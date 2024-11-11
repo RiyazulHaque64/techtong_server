@@ -3,6 +3,7 @@ import app from "./app";
 import config from "./config";
 import cron from "node-cron";
 import clearOldOTPs from "./app/utils/clearOldOTPs";
+import { CouponServices } from "./app/modules/Coupon/Coupon.services";
 
 const port = config.port || 9000;
 
@@ -16,8 +17,9 @@ async function main() {
     });
 
     // cron schedule to clear OTP
-    cron.schedule("*/2 * * * *", () => {
+    cron.schedule("0 0 * * *", () => {
       clearOldOTPs();
+      CouponServices.updateCouponActiveStatus();
     });
   } catch (error) {
     console.log(error);
