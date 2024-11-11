@@ -1,6 +1,7 @@
 import { Prisma, UserRole, UserStatus } from "@prisma/client";
 import pagination from "../../utils/pagination";
 import {
+  userFieldsValidationConfig,
   userSearchableFields,
   userSelectedFields,
   userSortableFields,
@@ -15,17 +16,17 @@ import { TUpdateUserRoleAndStatusPayload } from "./User.interfaces";
 import { TImage } from "../Image/Image.interfaces";
 import fieldValidityChecker from "../../utils/fieldValidityChecker";
 import { sortOrderType } from "../../constants/common";
+import validateQueryFields from "../../utils/validateQueryFields";
+import { validate } from "node-cron";
 
 const getUsers = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, ...remainingQuery } =
     query;
 
-  if (sortBy) {
-    fieldValidityChecker(userSortableFields, sortBy);
-  }
-  if (sortOrder) {
-    fieldValidityChecker(sortOrderType, sortOrder);
-  }
+  if (sortBy)
+    validateQueryFields(userFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(userFieldsValidationConfig, "sort_order", sortOrder);
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -50,30 +51,32 @@ const getUsers = async (query: Record<string, any>) => {
   }
 
   if (Object.keys(remainingQuery).length) {
-    Object.keys(remainingQuery).forEach((key) => {
+    for (const [key, value] of Object.entries(remainingQuery)) {
+      validateQueryFields(userFieldsValidationConfig, key, value);
       andConditions.push({
-        [key]: remainingQuery[key],
+        [key]: value === "true" ? true : value === "false" ? false : value,
       });
-    });
+    }
   }
 
   const whereConditions = {
     AND: andConditions,
   };
 
-  const result = await prisma.user.findMany({
-    where: whereConditions,
-    skip: skip,
-    take: limitNumber,
-    orderBy: {
-      [sortWith]: sortSequence,
-    },
-    select: {
-      ...userSelectedFields,
-    },
-  });
-
-  const total = await prisma.user.count({ where: whereConditions });
+  const [result, total] = await Promise.all([
+    prisma.user.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+      select: {
+        ...userSelectedFields,
+      },
+    }),
+    prisma.user.count({ where: whereConditions }),
+  ]);
 
   return {
     meta: {
@@ -212,6 +215,7 @@ const deleteUser = async (
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       id: payload.id,
+      is_deleted: false,
     },
   });
   if (userData.role === UserRole.SUPER_ADMIN && user?.role === UserRole.ADMIN) {

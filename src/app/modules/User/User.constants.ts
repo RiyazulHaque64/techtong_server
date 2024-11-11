@@ -1,9 +1,7 @@
 import { UserRole, UserStatus } from "@prisma/client";
+import { sortOrderType } from "../../constants/common";
 
 export const userFilterableFields = [
-  "name",
-  "email",
-  "contact_number",
   "searchTerm",
   "limit",
   "page",
@@ -11,7 +9,6 @@ export const userFilterableFields = [
   "sortOrder",
   "role",
   "status",
-  "is_deleted",
 ];
 
 export const userSearchableFields = ["name", "email", "contact_number"];
@@ -47,3 +44,10 @@ export const userRole = [
 ];
 
 export const userStatus = [UserStatus.ACTIVE, UserStatus.BLOCKED];
+
+export const userFieldsValidationConfig = {
+  sort_by: userSortableFields,
+  sort_order: sortOrderType,
+  role: Object.values(UserRole),
+  status: Object.values(UserStatus),
+};
