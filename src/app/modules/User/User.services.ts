@@ -4,7 +4,6 @@ import {
   userFieldsValidationConfig,
   userSearchableFields,
   userSelectedFields,
-  userSortableFields,
 } from "./User.constants";
 import prisma from "../../shared/prisma";
 import { TAuthUser } from "../../interfaces/common";
@@ -14,10 +13,7 @@ import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
 import { TUpdateUserRoleAndStatusPayload } from "./User.interfaces";
 import { TImage } from "../Image/Image.interfaces";
-import fieldValidityChecker from "../../utils/fieldValidityChecker";
-import { sortOrderType } from "../../constants/common";
 import validateQueryFields from "../../utils/validateQueryFields";
-import { validate } from "node-cron";
 
 const getUsers = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, ...remainingQuery } =

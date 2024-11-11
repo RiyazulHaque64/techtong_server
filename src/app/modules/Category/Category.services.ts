@@ -8,10 +8,7 @@ import { Prisma } from "@prisma/client";
 import {
   categoryFieldsValidationConfig,
   categorySearchableFields,
-  categorySortableFields,
 } from "./Category.constants";
-import fieldValidityChecker from "../../utils/fieldValidityChecker";
-import { sortOrderType } from "../../constants/common";
 import validateQueryFields from "../../utils/validateQueryFields";
 
 const addCategory = async (payload: TCategoryPayload) => {
