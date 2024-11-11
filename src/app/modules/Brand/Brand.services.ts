@@ -3,11 +3,16 @@ import prisma from "../../shared/prisma";
 import { generateSlug } from "../../utils/generateSlug";
 import pagination from "../../utils/pagination";
 import { TBrandPayload } from "./Brand.interfaces";
-import { brandSearchableFields, brandSortableFields } from "./Brand.constants";
+import {
+  brandFieldsValidationConfig,
+  brandSearchableFields,
+  brandSortableFields,
+} from "./Brand.constants";
 import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
 import fieldValidityChecker from "../../utils/fieldValidityChecker";
 import { sortOrderType } from "../../constants/common";
+import validateQueryFields from "../../utils/validateQueryFields";
 
 const addBrand = async (payload: TBrandPayload) => {
   const brand = {
@@ -27,12 +32,10 @@ const addBrand = async (payload: TBrandPayload) => {
 const getBrands = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder } = query;
 
-  if (sortBy) {
-    fieldValidityChecker(brandSortableFields, sortBy);
-  }
-  if (sortOrder) {
-    fieldValidityChecker(sortOrderType, sortOrder);
-  }
+  if (sortBy)
+    validateQueryFields(brandFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(brandFieldsValidationConfig, "sort_order", sortOrder);
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -60,16 +63,17 @@ const getBrands = async (query: Record<string, any>) => {
     AND: andConditions,
   };
 
-  const result = await prisma.brand.findMany({
-    where: whereConditions,
-    skip: skip,
-    take: limitNumber,
-    orderBy: {
-      [sortWith]: sortSequence,
-    },
-  });
-
-  const total = await prisma.brand.count({ where: whereConditions });
+  const [result, total] = await Promise.all([
+    prisma.brand.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+    }),
+    await prisma.brand.count({ where: whereConditions }),
+  ]);
 
   return {
     meta: {

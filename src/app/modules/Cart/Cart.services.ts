@@ -69,9 +69,8 @@ const addToCart = async (
 };
 
 const getCart = async (user: TAuthUser | undefined) => {
-  if (!user) {
+  if (!user)
     throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized");
-  }
 
   const cart = await prisma.cart.findUniqueOrThrow({
     where: {

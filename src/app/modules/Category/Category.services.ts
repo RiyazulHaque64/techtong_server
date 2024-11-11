@@ -6,11 +6,13 @@ import { TCategoryPayload } from "./Category.interfaces";
 import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
 import {
+  categoryFieldsValidationConfig,
   categorySearchableFields,
   categorySortableFields,
 } from "./Category.constants";
 import fieldValidityChecker from "../../utils/fieldValidityChecker";
 import { sortOrderType } from "../../constants/common";
+import validateQueryFields from "../../utils/validateQueryFields";
 
 const addCategory = async (payload: TCategoryPayload) => {
   if (payload.parent_id) {
@@ -19,9 +21,8 @@ const addCategory = async (payload: TCategoryPayload) => {
         id: payload.parent_id,
       },
     });
-    if (!parent_category) {
+    if (!parent_category)
       throw new ApiError(httpStatus.NOT_FOUND, "Parent category not found");
-    }
   }
   const category = {
     title: payload.title,
@@ -41,12 +42,14 @@ const addCategory = async (payload: TCategoryPayload) => {
 const getCategories = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, parent } = query;
 
-  if (sortBy) {
-    fieldValidityChecker(categorySortableFields, sortBy);
-  }
-  if (sortOrder) {
-    fieldValidityChecker(sortOrderType, sortOrder);
-  }
+  if (sortBy)
+    validateQueryFields(categoryFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(
+      categoryFieldsValidationConfig,
+      "sort_order",
+      sortOrder
+    );
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -73,7 +76,10 @@ const getCategories = async (query: Record<string, any>) => {
   if (parent) {
     andConditions.push({
       parent: {
-        title: parent,
+        title: {
+          equals: parent,
+          mode: "insensitive",
+        },
       },
     });
   }
@@ -82,19 +88,20 @@ const getCategories = async (query: Record<string, any>) => {
     AND: andConditions,
   };
 
-  const result = await prisma.category.findMany({
-    where: whereConditions,
-    skip: skip,
-    take: limitNumber,
-    orderBy: {
-      [sortWith]: sortSequence,
-    },
-    include: {
-      parent: true,
-    },
-  });
-
-  const total = await prisma.category.count({ where: whereConditions });
+  const [result, total] = await Promise.all([
+    prisma.category.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+      include: {
+        parent: true,
+      },
+    }),
+    prisma.category.count({ where: whereConditions }),
+  ]);
 
   return {
     meta: {
