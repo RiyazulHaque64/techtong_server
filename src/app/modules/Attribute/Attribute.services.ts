@@ -1,12 +1,9 @@
 import prisma from "../../shared/prisma";
 import { generateSlug } from "../../utils/generateSlug";
 import { TAttributePayload } from "./Attribute.interfaces";
-import fieldValidityChecker from "../../utils/fieldValidityChecker";
-import { sortOrderType } from "../../constants/common";
 import {
   attributeFieldsValidationConfig,
   attributeSearchableFields,
-  attributeSortableFields,
 } from "./Attribute.constants";
 import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";

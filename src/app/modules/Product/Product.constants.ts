@@ -1,3 +1,5 @@
+import { sortOrderType } from "../../constants/common";
+
 export const productSortableFields = [
   "name",
   "price",
@@ -8,3 +10,8 @@ export const productSortableFields = [
   "updated_at",
 ];
 export const productSearchableFields = ["name", "model", "code", "description"];
+
+export const productFieldsValidationConfig: Record<string, any> = {
+  sort_by: productSortableFields,
+  sort_order: sortOrderType,
+};

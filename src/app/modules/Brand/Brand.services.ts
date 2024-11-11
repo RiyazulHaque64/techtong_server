@@ -6,12 +6,7 @@ import { TBrandPayload } from "./Brand.interfaces";
 import {
   brandFieldsValidationConfig,
   brandSearchableFields,
-  brandSortableFields,
 } from "./Brand.constants";
-import ApiError from "../../error/ApiError";
-import httpStatus from "http-status";
-import fieldValidityChecker from "../../utils/fieldValidityChecker";
-import { sortOrderType } from "../../constants/common";
 import validateQueryFields from "../../utils/validateQueryFields";
 
 const addBrand = async (payload: TBrandPayload) => {

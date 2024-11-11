@@ -1,16 +1,14 @@
-import httpStatus from "http-status";
-import ApiError from "../../error/ApiError";
 import prisma from "../../shared/prisma";
-import fieldValidityChecker from "../../utils/fieldValidityChecker";
 import { generateSlug } from "../../utils/generateSlug";
 import { IProductPayload } from "./Product.interfaces";
-import { sortOrderType } from "../../constants/common";
 import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
 import {
+  productFieldsValidationConfig,
   productSearchableFields,
-  productSortableFields,
 } from "./Product.constants";
+import validateQueryFields from "../../utils/validateQueryFields";
+import addFilter from "../../utils/addFilter";
 
 const addProduct = async (payload: IProductPayload) => {
   payload.slug = generateSlug(payload.name);
@@ -32,15 +30,15 @@ const getProducts = async (query: Record<string, any>) => {
     category,
     published,
     featured,
+    minPrice,
+    maxPrice,
     ...remainingQuery
   } = query;
 
-  if (sortBy) {
-    fieldValidityChecker(productSortableFields, sortBy);
-  }
-  if (sortOrder) {
-    fieldValidityChecker(sortOrderType, sortOrder);
-  }
+  if (sortBy)
+    validateQueryFields(productFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(productFieldsValidationConfig, "sort_order", sortOrder);
 
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -57,14 +55,12 @@ const getProducts = async (query: Record<string, any>) => {
       .filter((word: string) => word.length > 0);
     andConditions.push({
       OR: words.flatMap((word: string) => [
-        ...productSearchableFields.map((field) => {
-          return {
-            [field]: {
-              contains: word,
-              mode: "insensitive",
-            },
-          };
-        }),
+        ...productSearchableFields.map((field) => ({
+          [field]: {
+            contains: word,
+            mode: "insensitive",
+          },
+        })),
         {
           brand: {
             name: {
@@ -85,7 +81,7 @@ const getProducts = async (query: Record<string, any>) => {
     });
   }
 
-  if (brand) {
+  if (brand)
     andConditions.push({
       brand: {
         name: {
@@ -94,9 +90,8 @@ const getProducts = async (query: Record<string, any>) => {
         },
       },
     });
-  }
 
-  if (category) {
+  if (category)
     andConditions.push({
       category: {
         title: {
@@ -105,19 +100,19 @@ const getProducts = async (query: Record<string, any>) => {
         },
       },
     });
-  }
 
-  if (published) {
+  if (published)
     andConditions.push({
       published: published === "true" ? true : false,
     });
-  }
 
-  if (featured) {
+  if (featured)
     andConditions.push({
       featured: featured === "true" ? true : false,
     });
-  }
+
+  addFilter(andConditions, "price", "gte", Number(minPrice));
+  addFilter(andConditions, "price", "lte", Number(maxPrice));
 
   if (Object.keys(remainingQuery).length) {
     Object.keys(remainingQuery).forEach((key) => {
@@ -156,17 +151,18 @@ const getProducts = async (query: Record<string, any>) => {
     AND: andConditions,
   };
 
-  const result = await prisma.product.findMany({
-    where: whereConditions,
-    skip: skip,
-    take: limitNumber,
-    orderBy: {
-      [sortWith]: sortSequence,
-    },
-    include: { brand: true, category: true },
-  });
-
-  const total = await prisma.product.count({ where: whereConditions });
+  const [result, total] = await Promise.all([
+    prisma.product.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+      include: { brand: true, category: true },
+    }),
+    prisma.product.count({ where: whereConditions }),
+  ]);
 
   return {
     meta: {
