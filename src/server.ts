@@ -16,7 +16,7 @@ async function main() {
     });
 
     // cron schedule to clear OTP
-    cron.schedule("0 12 * * *", () => {
+    cron.schedule("*/2 * * * *", () => {
       clearOldOTPs();
     });
   } catch (error) {

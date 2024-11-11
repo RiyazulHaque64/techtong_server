@@ -170,15 +170,23 @@ model Review {
 }
 
 model Coupon {
-  id             String   @id @default(uuid())
-  code           String
-  discount_value Int
-  expires_in     DateTime
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
-  order          Order?
-
-  @@map("coupons")
+  id                 String          @id @default(uuid())
+  code               String          @unique
+  discount_type      DiscountType    @default(AMOUNT)
+  discount_value     Float
+  maximum_value      Float?
+  start_date         DateTime        @default(now())
+  expiration_date    DateTime
+  usage_limit        Int?
+  per_user_limit     Int?
+  min_order_amount   Float?
+  min_product_amount Int?
+  is_active          Boolean         @default(true)
+  used_count         Int             @default(0)
+  beneficiary_type   BeneficiaryType @default(ALL)
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+  order              Order?
 }
 
 model Address {
@@ -287,4 +295,15 @@ enum DeliveryMethod {
 enum PaymentStatus {
   DUE
   PAID
+}
+
+enum DiscountType {
+  PERCENTAGE
+  AMOUNT
+}
+
+enum BeneficiaryType {
+  NEW_USER
+  EXISTING_USER
+  ALL
 }

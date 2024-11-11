@@ -9,6 +9,7 @@ import { AddressRoutes } from "../modules/Address/Address.routes";
 import { AttributeRoutes } from "../modules/Attribute/Attribute.routes";
 import { CartRoutes } from "../modules/Cart/Cart.routes";
 import { OrderRoutes } from "../modules/Order/Order.routes";
+import { CouponRoutes } from "../modules/Coupon/Coupon.routes";
 
 const router = Router();
 
@@ -52,6 +53,10 @@ const routes = [
   {
     path: "/attribute",
     route: AttributeRoutes,
+  },
+  {
+    path: "/coupon",
+    route: CouponRoutes,
   },
 ];
 
