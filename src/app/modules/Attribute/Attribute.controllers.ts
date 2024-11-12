@@ -19,7 +19,8 @@ const getAttributes = catchAsync(async (req, res, next) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Successfully retrieved the attributes",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 

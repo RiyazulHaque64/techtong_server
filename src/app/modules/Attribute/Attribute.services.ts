@@ -80,14 +80,18 @@ const getAttributes = async (query: Record<string, any>) => {
   };
 
   const orderBy: Prisma.AttributeOrderByWithRelationInput =
-    sortWith === "name" || "created_at"
+    sortWith === "name"
       ? {
           name: sortSequence,
         }
-      : {
+      : sortWith === "category"
+      ? {
           category: {
             title: sortSequence,
           },
+        }
+      : {
+          name: sortSequence,
         };
 
   const [result, total] = await Promise.all([

@@ -274,8 +274,8 @@
  * @swagger
  * /api/v1/brand/{id}:
  *   patch:
- *     summary: Update a single brand by ID
- *     description: Updates a single brand by its ID.
+ *     summary: Update an existing brand by ID
+ *     description: Updates an existing brand by its ID.
  *     tags: [Brand]
  *     parameters:
  *       - in: path
