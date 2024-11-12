@@ -4,6 +4,7 @@ import httpStatus from "http-status";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFoundHandler from "./app/middlewares/notFoundHandler";
 import router from "./app/routes";
+import swaggerRoutes from "./app/routes/swagger.routes";
 
 const app: Application = express();
 
@@ -22,6 +23,8 @@ app.get("/", (req: Request, res: Response) => {
 
 // main routes
 app.use("/api/v1", router);
+
+app.use("/api-docs", swaggerRoutes);
 
 // handle error
 app.use(globalErrorHandler);

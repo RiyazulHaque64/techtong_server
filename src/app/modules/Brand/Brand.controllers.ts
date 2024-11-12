@@ -19,7 +19,8 @@ const getBrands = catchAsync(async (req, res, next) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Successfully retrieved the brands",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 
