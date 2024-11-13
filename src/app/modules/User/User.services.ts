@@ -116,33 +116,36 @@ const updateProfile = async (
   file: TFile | undefined
 ) => {
   const image: Record<string, string> = {};
+
   if (file) {
-    const userData = await prisma.user.findUniqueOrThrow({
-      where: {
-        id: user?.id,
-      },
-      select: {
-        profile_pic: true,
-      },
-    });
-    userData &&
-      userData.profile_pic &&
-      (await fileUploader.deleteToCloudinary([
-        userData?.profile_pic?.cloud_id,
-      ]));
-    userData &&
-      userData.profile_pic &&
-      (await prisma.image.delete({
-        where: {
-          id: userData.profile_pic.id,
-        },
-      }));
     const convertedFile = Buffer.from(file.buffer).toString("base64");
     const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
     const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
     image["path"] = cloudinaryResponse?.secure_url as string;
     image["cloud_id"] = cloudinaryResponse?.public_id as string;
     image["name"] = file.originalname;
+
+    const userInfo = await prisma.user.findUniqueOrThrow({
+      where: {
+        id: user?.id,
+      },
+    });
+
+    if (userInfo.profile_pic) {
+      const profilePic = await prisma.image.findFirst({
+        where: {
+          path: userInfo.profile_pic,
+        },
+      });
+      if (profilePic) {
+        await fileUploader.deleteToCloudinary([profilePic.cloud_id]);
+        await prisma.image.delete({
+          where: {
+            id: profilePic.id,
+          },
+        });
+      }
+    }
   }
 
   let profilePic;
@@ -153,8 +156,8 @@ const updateProfile = async (
     });
   }
 
-  if (profilePic?.id) {
-    payload.profile_pic_id = profilePic?.id;
+  if (profilePic?.path) {
+    payload.profile_pic = profilePic.path;
   }
 
   const result = prisma.user.update({

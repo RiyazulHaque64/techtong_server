@@ -6,16 +6,16 @@ export interface IOTPCreatePayload {
   profile_pic_id: string;
 }
 export interface IRegisterPayload {
-  otp: string;
+  otp: number;
   password: string;
 }
 
 export interface ILoginCredential {
-  emailOrContactNumber: string;
+  email_or_contact_number: string;
   password: string;
 }
 
 export interface IChangePasswordPayload {
-  oldPassword: string;
-  newPassword: string;
+  old_password: string;
+  new_password: string;
 }

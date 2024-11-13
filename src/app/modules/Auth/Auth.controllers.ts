@@ -11,7 +11,7 @@ const createOTP = catchAsync(async (req, res, next) => {
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
-    message: "OTP sent successful",
+    message: "OTP sent successfully. Check your email and contact number",
     data: result,
   });
 });
@@ -27,14 +27,14 @@ const register = catchAsync(async (req, res, next) => {
 });
 
 const login = catchAsync(async (req, res, next) => {
-  const { accessToken, refreshToken } = await AuthServices.login(req.body);
+  const { refreshToken, ...result } = await AuthServices.login(req.body);
   const maxAge = 60 * 24 * 60 * 60 * 1000;
-  res.cookie("refreshToken", refreshToken, { maxAge, httpOnly: true });
+  res.cookie("refresh_token", refreshToken, { maxAge, httpOnly: true });
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "User login is successful",
-    data: { accessToken },
+    data: result,
   });
 });
 
@@ -52,12 +52,12 @@ const resetPassword = catchAsync(
 
 const forgotPassword = catchAsync(async (req, res, next) => {
   const result = await AuthServices.forgotPassword(
-    req.body.emailOrContactNumber
+    req.body.email_or_contact_number
   );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "New password sent to your email",
+    message: "New password sent to your email and contact number",
     data: result,
   });
 });

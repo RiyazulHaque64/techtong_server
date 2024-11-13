@@ -24,16 +24,19 @@ const createOTP = async (data: IOTPCreatePayload) => {
     data.name || "customer"
   }, your OTP is: ${generatedOTP} \nTECHTONG`;
 
-  const emailBody = `<div style="background-color: #F5F5F5; width: 80%; padding: 40px; display: flex; direction: column; justify-content: center; align-items: center">
-            <h1>Your OTP is:</h1>
-            <p style="font-size: 20px; font-weight: bold; background-color: #3352ff; padding: 10px; color: white; border-radius: 8px">${generatedOTP}</p>
+  const emailBody = `<div style="background-color: #F5F5F5; padding: 40px; text-align: center">
+            <h4 style="font-size: 16px; font-weight: bold; color: #3352ff">Your OTP is <span>${generatedOTP}</span></h4>
         </div>`;
 
+  let emailResponse;
   if (data.email) {
-    await sendEmail(data.email, emailBody);
+    emailResponse = await sendEmail(data.email, emailBody);
   }
 
-  await sendOTP(data.contact_number, SMSBody);
+  const SMSResponse = await sendOTP(data.contact_number, SMSBody);
+
+  if (emailResponse?.accepted?.length === 0 && SMSResponse.success === false)
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to send OTP");
 
   const result = await prisma.userOTP.create({
     data: {
@@ -99,16 +102,16 @@ const register = async (data: IRegisterPayload) => {
 };
 
 const login = async (credential: ILoginCredential) => {
-  const { emailOrContactNumber, password } = credential;
+  const { email_or_contact_number, password } = credential;
 
   const user = await prisma.user.findFirst({
     where: {
       OR: [
         {
-          email: emailOrContactNumber,
+          email: email_or_contact_number,
         },
         {
-          contact_number: emailOrContactNumber,
+          contact_number: email_or_contact_number,
         },
       ],
       status: UserStatus.ACTIVE,
@@ -117,7 +120,7 @@ const login = async (credential: ILoginCredential) => {
   });
 
   if (!user) {
-    throw new ApiError(httpStatus.FORBIDDEN, "User not found");
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
   const checkPassword = await bcrypt.compare(password, user.password);
@@ -153,7 +156,13 @@ const login = async (credential: ILoginCredential) => {
   );
 
   return {
-    accessToken,
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    contact_number: user.contact_number,
+    role: user.role,
+    profile_pic: user.profile_pic,
+    access_token: accessToken,
     refreshToken,
   };
 };
@@ -169,7 +178,7 @@ const resetPassword = async (
   });
 
   const checkPassword = await bcrypt.compare(
-    payload.oldPassword,
+    payload.old_password,
     userInfo.password
   );
 
@@ -178,7 +187,7 @@ const resetPassword = async (
   }
 
   const hashedPassword = await bcrypt.hash(
-    payload.newPassword,
+    payload.new_password,
     Number(config.salt_rounds)
   );
 
@@ -198,23 +207,24 @@ const resetPassword = async (
   return result;
 };
 
-const forgotPassword = async (emailOrContactNumber: string) => {
+const forgotPassword = async (email_or_contact_number: string) => {
   const user = await prisma.user.findFirst({
     where: {
       OR: [
         {
-          email: emailOrContactNumber,
+          email: email_or_contact_number,
         },
         {
-          contact_number: emailOrContactNumber,
+          contact_number: email_or_contact_number,
         },
       ],
       status: UserStatus.ACTIVE,
+      is_deleted: false,
     },
   });
 
   if (!user) {
-    throw new ApiError(httpStatus.FORBIDDEN, "User not found");
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
   }
 
   const generatedPassword = generatePassword(6);
@@ -228,19 +238,22 @@ const forgotPassword = async (emailOrContactNumber: string) => {
             <p style="font-size: 20px; font-weight: bold; background-color: #3352ff; padding: 10px; color: white; border-radius: 8px">${generatedPassword}</p>
         </div>`;
 
+  let emailResponse;
   if (user.email) {
-    await sendEmail(user.email, emailBody);
+    emailResponse = await sendEmail(user.email, emailBody);
   }
 
   const SMSBody = `Dear ${
     user.name || "customer"
   }, your new password is: ${generatedPassword} \nTECHTONG`;
 
-  const sentPassword = await sendOTP(user.contact_number, SMSBody);
+  const SMSResponse = await sendOTP(user.contact_number, SMSBody);
 
-  if (!sentPassword) {
-    throw new ApiError(httpStatus.FORBIDDEN, "Failed to send password");
-  }
+  if (emailResponse?.accepted?.length === 0 && SMSResponse.success === false)
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Failed to send new password to user email and contact number"
+    );
 
   await prisma.user.update({
     where: {

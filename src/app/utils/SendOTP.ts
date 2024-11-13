@@ -15,9 +15,15 @@ async function sendOTP(contactNumber: string, body: string) {
       from: config.twilio_phone_number,
       to: `+88${contactNumber}`,
     });
-    return `OTP sent successfully: ${message.sid}`;
+    return {
+      success: true,
+      message: `OTP sent successfully: ${message.sid}`,
+    };
   } catch (error) {
-    return `Failed to send OTP: ${error}`;
+    return {
+      success: false,
+      message: `Failed to send OTP: ${error}`,
+    };
   }
 }
 

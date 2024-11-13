@@ -21,8 +21,8 @@ const createOTPValidationSchema = z.object({
 const registerValidationSchema = z.object({
   body: z.object({
     otp: z
-      .string({ required_error: "OTP is required" })
-      .regex(/^\d{6}$/, { message: "OTP must be exactly 6 digits" }),
+      .number({ required_error: "OTP is required" })
+      .min(6, { message: "OTP is invalid" }),
     password: z
       .string({ required_error: "Password is required" })
       .min(6, { message: "Password must be at least 6 characters long" })
@@ -34,7 +34,7 @@ const registerValidationSchema = z.object({
 
 const loginValidationSchema = z.object({
   body: z.object({
-    emailOrContactNumber: z
+    email_or_contact_number: z
       .string()
       .min(1, { message: "Email or contact number is required" }),
     password: z.string({ required_error: "Password is required" }),
@@ -43,8 +43,8 @@ const loginValidationSchema = z.object({
 
 const resetPasswordValidationSchema = z.object({
   body: z.object({
-    oldPassword: z.string().min(6, "Old valid password is required"),
-    newPassword: z
+    old_password: z.string().min(6, "Old valid password is required"),
+    new_password: z
       .string({ required_error: "New password is required" })
       .min(6, { message: "password must be at least 6 characters long" })
       .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, {
@@ -55,7 +55,7 @@ const resetPasswordValidationSchema = z.object({
 
 const forgotPasswordValidationSchema = z.object({
   body: z.object({
-    emailOrContactNumber: z
+    email_or_contact_number: z
       .string({
         required_error: "Email or contact number is required",
       })
