@@ -19,7 +19,8 @@ const getCategories = catchAsync(async (req, res, next) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Successfully retrieved the categories",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 
