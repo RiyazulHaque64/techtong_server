@@ -25,6 +25,11 @@ const swaggerDefinition = {
         in: "header",
         name: "Authorization",
       },
+      RetailerAuth: {
+        type: "apiKey",
+        in: "header",
+        name: "Authorization",
+      },
     },
   },
 };

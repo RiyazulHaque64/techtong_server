@@ -17,54 +17,46 @@ const addToCart = async (
     },
   });
 
-  let cart = await prisma.cart.findFirst({
-    where: {
-      user_id: user.id,
-    },
-  });
-  if (!cart) {
-    cart = await prisma.cart.create({
-      data: {
-        user_id: user.id,
-      },
-    });
-  }
-
-  if (payload.quantity === 0 || (payload.quantity && payload.quantity < 0)) {
+  if (payload.quantity === undefined || payload.quantity <= 0) {
     await prisma.cartItem.deleteMany({
       where: {
-        cart_id: cart.id,
+        cart: {
+          user_id: user.id,
+        },
         product_id: product.id,
       },
     });
     return null;
   }
 
-  let cartItem = await prisma.cartItem.findFirst({
+  const cart = await prisma.cart.upsert({
     where: {
-      cart_id: cart.id,
-      product_id: product.id,
+      user_id: user.id,
     },
+    create: {
+      user_id: user.id,
+    },
+    update: {},
   });
-  if (cartItem) {
-    cartItem = await prisma.cartItem.update({
-      where: {
-        id: cartItem.id,
-      },
-      data: {
-        quantity: payload.quantity,
-      },
-    });
-  } else {
-    cartItem = await prisma.cartItem.create({
-      data: {
+
+  let cartItem = await prisma.cartItem.upsert({
+    where: {
+      cart_id_product_id: {
         cart_id: cart.id,
         product_id: product.id,
-        quantity: payload.quantity,
-        price: product.price,
       },
-    });
-  }
+    },
+    create: {
+      cart_id: cart.id,
+      product_id: product.id,
+      quantity: payload.quantity,
+      price: product.price,
+    },
+    update: {
+      quantity: payload.quantity,
+    },
+  });
+
   return cartItem;
 };
 
@@ -106,22 +98,12 @@ const deleteToCart = async (
     throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized");
   }
 
-  const cartItem = await prisma.cartItem.findUniqueOrThrow({
-    where: {
-      id: cartItemId,
-    },
-    include: {
-      cart: true,
-    },
-  });
-
-  if (cartItem.cart.user_id !== user.id) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Cart item not found");
-  }
-
   await prisma.cartItem.delete({
     where: {
       id: cartItemId,
+      cart: {
+        user_id: user.id,
+      },
     },
   });
 

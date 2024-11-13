@@ -115,15 +115,20 @@ const updateProfile = async (
   payload: Record<string, any>,
   file: TFile | undefined
 ) => {
-  const image: Record<string, string> = {};
+  let profilePic;
 
   if (file) {
+    const image: Record<string, string> = {};
     const convertedFile = Buffer.from(file.buffer).toString("base64");
     const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
     const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
     image["path"] = cloudinaryResponse?.secure_url as string;
     image["cloud_id"] = cloudinaryResponse?.public_id as string;
     image["name"] = file.originalname;
+
+    profilePic = await prisma.image.create({
+      data: image as TImage,
+    });
 
     const userInfo = await prisma.user.findUniqueOrThrow({
       where: {
@@ -146,14 +151,6 @@ const updateProfile = async (
         });
       }
     }
-  }
-
-  let profilePic;
-
-  if (image.path && image.cloud_id) {
-    profilePic = await prisma.image.create({
-      data: image as TImage,
-    });
   }
 
   if (profilePic?.path) {

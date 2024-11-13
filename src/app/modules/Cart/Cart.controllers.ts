@@ -38,7 +38,7 @@ const deleteToCart = catchAsync(
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Items removed successfully",
+      message: "Successfully removed the product from the cart",
       data: result,
     });
   }
