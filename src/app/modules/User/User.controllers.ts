@@ -14,7 +14,8 @@ const getUsers = catchAsync(async (req, res, next) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Users retrieved are successful",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 
@@ -58,8 +59,9 @@ const updateProfile = catchAsync(
 
 const updateUserRoleAndStatus = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
-    const result = await UserServices.updateUserRoleAndStatus(
+    const result = await UserServices.updateUser(
       req.user,
+      req.params.id,
       req.body
     );
     sendResponse(res, {
@@ -71,23 +73,10 @@ const updateUserRoleAndStatus = catchAsync(
   }
 );
 
-const deleteUser = catchAsync(
-  async (req: Request & { user?: TAuthUser }, res, next) => {
-    const result = await UserServices.deleteUser(req.user, req.body);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Successfully deleted the user",
-      data: result,
-    });
-  }
-);
-
 export const UserControllers = {
   getUsers,
   getUser,
   getMe,
   updateProfile,
   updateUserRoleAndStatus,
-  deleteUser,
 };

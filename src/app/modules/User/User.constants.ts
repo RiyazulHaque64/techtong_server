@@ -43,7 +43,11 @@ export const userRole = [
   UserRole.USER,
 ];
 
-export const userStatus = [UserStatus.ACTIVE, UserStatus.BLOCKED];
+export const userStatus = [
+  UserStatus.ACTIVE,
+  UserStatus.BLOCKED,
+  UserStatus.INACTIVE,
+];
 
 export const userFieldsValidationConfig = {
   sort_by: userSortableFields,

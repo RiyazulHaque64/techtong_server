@@ -10,6 +10,7 @@ const updateProfileValidationSchema = z.object({
           invalid_type_error: "Name must be a text",
         })
         .optional(),
+      email: z.string().email({ message: "Invalid email" }).optional(),
     })
     .strict(),
 });
@@ -17,12 +18,8 @@ const updateProfileValidationSchema = z.object({
 const updateUserRoleAndStatusValidationSchema = z.object({
   body: z
     .object({
-      id: z.string({
-        required_error: "User id is required",
-        invalid_type_error: "User id must be a text",
-      }),
       role: z
-        .enum([...userRole] as [string], {
+        .enum(["USER", "RETAILER", "ADMIN"], {
           message: "Invalid role",
         })
         .optional(),
@@ -31,27 +28,16 @@ const updateUserRoleAndStatusValidationSchema = z.object({
           message: "Invalid status",
         })
         .optional(),
+      is_deleted: z.boolean().optional(),
     })
     .strict()
-    .refine((data) => data.role || data.status, {
-      path: ["role", "status"],
-      message: "Either role or status must be provided",
+    .refine((data) => data.role || data.status || data.is_deleted, {
+      path: ["role", "status", "is_deleted"],
+      message: "Either role, status or is_deleted must be provided",
     }),
-});
-
-const deleteUserValidationSchema = z.object({
-  body: z
-    .object({
-      id: z.string({
-        required_error: "User id is required",
-        invalid_type_error: "User id must be a text",
-      }),
-    })
-    .strict(),
 });
 
 export const UserValidations = {
   updateProfileValidationSchema,
   updateUserRoleAndStatusValidationSchema,
-  deleteUserValidationSchema,
 };

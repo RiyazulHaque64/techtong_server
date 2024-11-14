@@ -11,7 +11,7 @@ import { TFile } from "../../interfaces/file";
 import { fileUploader } from "../../utils/fileUploader";
 import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
-import { TUpdateUserRoleAndStatusPayload } from "./User.interfaces";
+import { TUpdateUserPayload } from "./User.interfaces";
 import { TImage } from "../Image/Image.interfaces";
 import validateQueryFields from "../../utils/validateQueryFields";
 
@@ -170,66 +170,44 @@ const updateProfile = async (
   return result;
 };
 
-const updateUserRoleAndStatus = async (
+const updateUser = async (
   user: TAuthUser | undefined,
-  payload: TUpdateUserRoleAndStatusPayload
+  id: string,
+  payload: TUpdateUserPayload
 ) => {
-  const userData = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: payload.id,
-      is_deleted: false,
-    },
-  });
-  if (userData.role === UserRole.SUPER_ADMIN && user?.role === UserRole.ADMIN) {
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      "You are not authorized to update this user"
-    );
-  }
-  if (user?.role === UserRole.ADMIN && payload.role === UserRole.SUPER_ADMIN) {
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      "You are not authorized to update this"
-    );
-  }
-  const result = await prisma.user.update({
-    where: {
-      id: userData.id,
-    },
-    data: payload,
-    select: {
-      ...userSelectedFields,
-    },
-  });
+  await authorizeUserUpdate(user as TAuthUser, id);
+
+  const [result] = await prisma.$transaction([
+    prisma.user.update({
+      where: {
+        id,
+        is_deleted: false,
+      },
+      data: payload,
+      select: {
+        ...userSelectedFields,
+      },
+    }),
+  ]);
+
+  if (!result) throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+
   return result;
 };
 
-const deleteUser = async (
-  user: TAuthUser | undefined,
-  payload: { id: string }
-) => {
+// Helper function to handle authorization checks
+const authorizeUserUpdate = async (user: TAuthUser, id: string) => {
   const userData = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: payload.id,
-      is_deleted: false,
-    },
-  });
-  if (userData.role === UserRole.SUPER_ADMIN && user?.role === UserRole.ADMIN) {
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      "You are not authorized to delete this user"
-    );
-  }
-  const result = await prisma.user.update({
-    where: {
-      id: payload.id,
-    },
-    data: {
-      is_deleted: true,
-    },
+    where: { id },
+    select: { role: true },
   });
 
-  return result;
+  if (userData.role === UserRole.SUPER_ADMIN && user.role === UserRole.ADMIN) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "Admins cannot modify Super Admin"
+    );
+  }
 };
 
 export const UserServices = {
@@ -237,6 +215,5 @@ export const UserServices = {
   getUser,
   getMe,
   updateProfile,
-  updateUserRoleAndStatus,
-  deleteUser,
+  updateUser,
 };

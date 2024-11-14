@@ -16,7 +16,7 @@ router.get(
 );
 
 router.get(
-  "/me",
+  "/profile",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),
   UserControllers.getMe
 );
@@ -36,17 +36,10 @@ router.patch(
 );
 
 router.patch(
-  "/update-role-status",
+  "/update-user/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   validateRequest(UserValidations.updateUserRoleAndStatusValidationSchema),
   UserControllers.updateUserRoleAndStatus
-);
-
-router.delete(
-  "/delete-user",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  validateRequest(UserValidations.deleteUserValidationSchema),
-  UserControllers.deleteUser
 );
 
 export const UserRoutes = router;

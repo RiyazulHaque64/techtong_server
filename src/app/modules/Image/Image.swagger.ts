@@ -2,7 +2,7 @@
  * @swagger
  * tags:
  *   name: Image
- *   description: API endpoints related to coupon
+ *   description: API endpoints related to image
  */
 
 // Upload images

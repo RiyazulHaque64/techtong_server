@@ -1,7 +1,7 @@
 import { UserRole, UserStatus } from "@prisma/client";
 
-export type TUpdateUserRoleAndStatusPayload = {
-  id: string;
+export type TUpdateUserPayload = {
   role?: UserRole;
   status?: UserStatus;
+  is_deleted?: boolean;
 };
