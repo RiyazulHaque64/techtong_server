@@ -8,6 +8,8 @@ import {
 import { TCouponPayload } from "./Coupon.interfaces";
 import addFilter from "../../utils/addFilter";
 import validateQueryFields from "../../utils/validateQueryFields";
+import httpStatus from "http-status";
+import ApiError from "../../error/ApiError";
 
 const createCoupon = async (payload: TCouponPayload) => {
   const { start_date, expiration_date, ...remainingField } = payload;
@@ -16,7 +18,10 @@ const createCoupon = async (payload: TCouponPayload) => {
   const modified_expiration_date = new Date(expiration_date);
 
   if (modified_start_date > modified_expiration_date) {
-    throw new Error("Start date cannot be greater than expiration date");
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Start date cannot be greater than expiration date"
+    );
   }
 
   const result = await prisma.coupon.create({
