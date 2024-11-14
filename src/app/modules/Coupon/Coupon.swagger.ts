@@ -267,7 +267,7 @@
  *                      properties:
  *                        id:
  *                          type: string
- *                          description: The ID of the new coupon
+ *                          description: The ID of the coupon
  *                          example: 656c6ccf-199c-454c-937b-f41c148f673b
  *                        code:
  *                          type: string
