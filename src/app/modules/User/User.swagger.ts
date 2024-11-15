@@ -433,7 +433,7 @@
  *                  message:
  *                    type: string
  *                    description: A message indicating the result of the operation
- *                    example: User updated is successful
+ *                    example: Successfully updated the user
  *                  data:
  *                    type: object
  *                    properties:

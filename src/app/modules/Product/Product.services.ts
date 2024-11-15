@@ -4,6 +4,8 @@ import { IProductPayload } from "./Product.interfaces";
 import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
 import {
+  brandSelectFieldsWithProduct,
+  categorySelectFieldsWithProduct,
   productFieldsValidationConfig,
   productSearchableFields,
 } from "./Product.constants";
@@ -14,7 +16,18 @@ const addProduct = async (payload: IProductPayload) => {
   payload.slug = generateSlug(payload.name);
   const result = await prisma.product.create({
     data: payload,
-    include: { brand: true, category: true },
+    include: {
+      brand: {
+        select: {
+          ...brandSelectFieldsWithProduct,
+        },
+      },
+      category: {
+        select: {
+          ...categorySelectFieldsWithProduct,
+        },
+      },
+    },
   });
   return result;
 };
@@ -47,7 +60,7 @@ const getProducts = async (query: Record<string, any>) => {
     sortOrder,
   });
 
-  const andConditions: Prisma.ProductWhereInput[] = [];
+  const andConditions: Prisma.ProductWhereInput[] = [{ is_deleted: false }];
 
   if (searchTerm) {
     const words: string[] = searchTerm
@@ -159,7 +172,18 @@ const getProducts = async (query: Record<string, any>) => {
       orderBy: {
         [sortWith]: sortSequence,
       },
-      include: { brand: true, category: true },
+      include: {
+        brand: {
+          select: {
+            ...brandSelectFieldsWithProduct,
+          },
+        },
+        category: {
+          select: {
+            ...categorySelectFieldsWithProduct,
+          },
+        },
+      },
     }),
     prisma.product.count({ where: whereConditions }),
   ]);
@@ -196,15 +220,21 @@ const updateProduct = async (id: string, payload: IProductPayload) => {
       id,
     },
     data: payload,
-    include: { brand: true, category: true },
+    include: {
+      brand: { select: { ...brandSelectFieldsWithProduct } },
+      category: { select: { ...categorySelectFieldsWithProduct } },
+    },
   });
   return result;
 };
 
 const deleteProduct = async (id: string) => {
-  await prisma.product.delete({
+  await prisma.product.update({
     where: {
       id,
+    },
+    data: {
+      is_deleted: true,
     },
   });
   return null;

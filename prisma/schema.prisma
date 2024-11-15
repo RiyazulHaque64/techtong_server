@@ -38,7 +38,7 @@ model Product {
   brand_id               String?
   category_id            String?
   tags                   String[]    @default([])
-  code                   String
+  code                   String?
   stock                  Int         @default(0)
   price                  Int
   discount_price         Int?
@@ -52,6 +52,7 @@ model Product {
   additional_information String? //html
   key_features           String[]    @default([])
   attributes             Json?
+  is_deleted             Boolean     @default(false)
   created_at             DateTime    @default(now())
   updated_at             DateTime    @updatedAt
   orderItems             OrderItem[]

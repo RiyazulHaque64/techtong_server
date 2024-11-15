@@ -15,3 +15,17 @@ export const productFieldsValidationConfig: Record<string, any> = {
   sort_by: productSortableFields,
   sort_order: sortOrderType,
 };
+
+export const brandSelectFieldsWithProduct = {
+  id: true,
+  name: true,
+  slug: true,
+  icon: true,
+};
+
+export const categorySelectFieldsWithProduct = {
+  id: true,
+  title: true,
+  slug: true,
+  icon: true,
+};

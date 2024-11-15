@@ -132,3 +132,14 @@ const createItems = [
     price: 1200,
   },
 ];
+
+const attributes = [
+  {
+    slug: "color",
+    value: "red",
+  },
+  {
+    slug: "interface",
+    value: "wireless",
+  },
+];

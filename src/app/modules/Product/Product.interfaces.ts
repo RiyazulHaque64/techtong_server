@@ -5,7 +5,7 @@ export interface IProductPayload {
   brand_id?: string;
   category_id?: string;
   tags?: string[];
-  code: string;
+  code?: string;
   stock?: number;
   price: number;
   discount_price?: number;
@@ -16,5 +16,5 @@ export interface IProductPayload {
   specification?: string;
   additional_information?: string;
   key_features?: string[];
-  attributes?: [{ name: string; value: string }];
+  attributes?: [{ slug: string; value: string }];
 }

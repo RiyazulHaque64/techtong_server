@@ -40,7 +40,8 @@ const addProductValidationSchema = z.object({
           required_error: "Product code is required",
           invalid_type_error: "Product code must be a text",
         })
-        .length(6, "Product code must be 6 characters long"),
+        .length(6, "Product code must be 6 characters long")
+        .optional(),
       stock: z
         .number({
           invalid_type_error: "Product stock must be a number",
@@ -87,7 +88,7 @@ const addProductValidationSchema = z.object({
         .array(z.string({ invalid_type_error: "Key feature must be a text" }))
         .optional(),
       attributes: z
-        .array(z.object({ name: z.string(), value: z.string() }))
+        .array(z.object({ slug: z.string(), value: z.string() }))
         .optional(),
     })
     .strict(),

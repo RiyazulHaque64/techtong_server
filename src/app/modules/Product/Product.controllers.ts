@@ -21,7 +21,8 @@ const getProducts = catchAsync(async (req, res, next) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Products have been successfully retrieved",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 
