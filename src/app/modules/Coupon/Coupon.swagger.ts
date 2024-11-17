@@ -332,3 +332,79 @@
  *                          description: The last update date of the coupon
  *                          example: 2023-01-01T00:00:00.000Z
  */
+
+// Apply Coupon
+/**
+ * @swagger
+ * /api/v1/coupon/apply-coupon:
+ *   post:
+ *     summary: Apply a coupon
+ *     description: Apply a coupon
+ *     tags: [Coupon]
+ *     requestBody:
+ *       description: Code, contact number, order amount and product amount is required to apply a coupon.
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *               - contact_number
+ *               - order_amount
+ *               - product_amount
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 description: The code of the coupon
+ *                 example: NEWYEAR25
+ *               contact_number:
+ *                 type: string
+ *                 description: The contact number of the user
+ *                 example: '01500000000'
+ *               order_amount:
+ *                 type: number
+ *                 description: The order amount of the order
+ *                 example: 1000
+ *               product_amount:
+ *                 type: number
+ *                 description: The product amount of the order
+ *                 example: 2
+ *               customer_type:
+ *                 type: string
+ *                 description: The customer type
+ *                 example: GUEST | NEW | EXISTING
+ *     responses:
+ *       201:
+ *         description: If the coupon is created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Indicates the success or failure of the operation
+ *                  message:
+ *                    type: string
+ *                    description: A message indicating the result of the operation
+ *                    example: Successfully applied the coupon
+ *                  data:
+ *                    type: object
+ *                    description: A JSON object representing the coupon
+ *                    properties:
+ *                      id:
+ *                        type: string
+ *                        description: The ID of the applied coupon
+ *                        example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                      code:
+ *                        type: string
+ *                        description: The code of the applied coupon
+ *                        example: NEWYEAR25
+ *                      discount_amount:
+ *                        type: number
+ *                        description: The discount amount of the applied coupon
+ *                        example: 25
+ *       400:
+ *         description: If the request is invalid or missing required fields
+ */

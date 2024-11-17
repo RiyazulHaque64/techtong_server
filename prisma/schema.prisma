@@ -187,6 +187,7 @@ model Coupon {
   created_at         DateTime        @default(now())
   updated_at         DateTime        @updatedAt
   order              Order?
+  customerInfo       CustomerInfo[]
 }
 
 model Address {
@@ -209,7 +210,10 @@ model CustomerInfo {
   contact_number String  @unique
   email          String?
   city           String
+  coupon_id      String?
   order          Order[]
+
+  coupon Coupon? @relation(fields: [coupon_id], references: [id])
 
   @@map("customers_info")
 }

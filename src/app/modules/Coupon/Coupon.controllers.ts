@@ -27,7 +27,18 @@ const getCoupons = catchAsync(async (req, res, next) => {
   });
 });
 
+const applyCoupon = catchAsync(async (req, res, next) => {
+  const result = await CouponServices.applyCoupon(req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Successfully applied the coupon",
+    data: result,
+  });
+});
+
 export const CouponControllers = {
   createCoupon,
   getCoupons,
+  applyCoupon,
 };

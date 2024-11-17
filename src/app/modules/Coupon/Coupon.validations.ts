@@ -36,9 +36,10 @@ const createCouponValidationSchema = z.object({
           "Start date must be in the format YYYY-MM-DD"
         )
         .refine(
-          (value) => new Date(value) >= new Date(),
+          (value) => new Date(value).toISOString() >= new Date().toISOString(),
           "Date must be present or in the future"
         )
+        .transform((value) => new Date(value).toISOString())
         .optional(),
       expiration_date: z
         .string({
@@ -51,7 +52,8 @@ const createCouponValidationSchema = z.object({
         .refine(
           (value) => new Date(value) > new Date(),
           "Date must be in the future"
-        ),
+        )
+        .transform((value) => new Date(value).toISOString()),
       usage_limit: z
         .number({
           invalid_type_error: "Usage limit must be a number",
@@ -91,6 +93,35 @@ const createCouponValidationSchema = z.object({
     .strict(),
 });
 
+const applyCouponValidationSchema = z.object({
+  body: z
+    .object({
+      code: z
+        .string({
+          required_error: "Coupon code is required",
+          invalid_type_error: "Coupon code must be a text",
+        })
+        .min(1, "Coupon code must be required"),
+      contact_number: z
+        .string({ required_error: "Contact number is required" })
+        .regex(/^01\d{9}$/, {
+          message:
+            "Contact number must be a valid Bangladeshi number like as 01511111111",
+        }),
+      order_amount: z.number({
+        required_error: "Order amount is required",
+        invalid_type_error: "Order amount must be a number",
+      }),
+      product_amount: z.number({
+        required_error: "Product amount is required",
+        invalid_type_error: "Product amount must be a number",
+      }),
+      customer_type: z.enum(["GUEST", "NEW", "EXISTING"]).optional(),
+    })
+    .strict(),
+});
+
 export const CouponValidations = {
   createCouponValidationSchema,
+  applyCouponValidationSchema,
 };

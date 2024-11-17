@@ -13,3 +13,11 @@ export type TCouponPayload = {
   min_product_amount?: number;
   beneficiary_type?: BeneficiaryType;
 };
+
+export type TApplyCouponPayload = {
+  code: string;
+  contact_number: string;
+  order_amount: number;
+  product_amount: number;
+  customer_type: "NEW" | "EXISTING" | "GUEST";
+};

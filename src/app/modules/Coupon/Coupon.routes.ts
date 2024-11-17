@@ -14,6 +14,12 @@ router.get(
 );
 
 router.post(
+  "/apply-coupon",
+  validateRequest(CouponValidations.applyCouponValidationSchema),
+  CouponControllers.applyCoupon
+);
+
+router.post(
   "/create-coupon",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   validateRequest(CouponValidations.createCouponValidationSchema),
