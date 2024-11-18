@@ -143,3 +143,23 @@ const attributes = [
     value: "wireless",
   },
 ];
+
+const role = "admins";
+let price;
+
+switch (role) {
+  case "super_admin":
+    price = 100;
+    break;
+  case "admin":
+    price = 50;
+    break;
+  case "retailer":
+    price = 90;
+    break;
+  default:
+    price = 110;
+    break;
+}
+
+console.log(price);

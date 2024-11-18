@@ -10,7 +10,7 @@ export type TCreateOrderForRegisteredUser = {
   };
   payment_method?: PaymentMethod;
   delivery_method?: DeliveryMethod;
-  coupon_id?: string;
+  coupon_code?: string;
   comment?: string;
 };
 

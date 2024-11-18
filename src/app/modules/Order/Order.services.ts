@@ -6,10 +6,15 @@ import {
   TCreateOrderForRegisteredUser,
   TOrderItem,
 } from "./Order.interfaces";
-import { HOME_DELIVERY_CHARGE } from "./Order.constants";
+import {
+  HOME_DELIVERY_CHARGE,
+  OrderSelectedFieldsForRegisteredUser,
+} from "./Order.constants";
 import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
 import { userSelectedFields } from "../User/User.constants";
+import { CouponServices } from "../Coupon/Coupon.services";
+import { TApplyCouponResponse } from "../Coupon/Coupon.interfaces";
 
 const createOrderForRegisteredUser = async (
   user: TAuthUser | undefined,
@@ -17,25 +22,27 @@ const createOrderForRegisteredUser = async (
 ) => {
   const {
     customer_information,
-    coupon_id,
+    coupon_code,
     delivery_method,
     payment_method,
     comment,
   } = data;
 
-  const userInfo = await prisma.user.findUniqueOrThrow({
+  const { cart, orders, ...userInfo } = await prisma.user.findUniqueOrThrow({
     where: {
       id: user?.id,
     },
-  });
-  const cart = await prisma.cart.findUniqueOrThrow({
-    where: {
-      user_id: user?.id,
-    },
     include: {
-      cart_items: true,
+      cart: {
+        include: {
+          cart_items: true,
+        },
+      },
+      orders: true,
     },
   });
+
+  const userType = orders?.length > 0 ? "EXISTING" : "NEW";
 
   if (!cart || (cart && cart.cart_items.length === 0)) {
     throw new ApiError(
@@ -44,26 +51,34 @@ const createOrderForRegisteredUser = async (
     );
   }
 
-  let coupon: Coupon | null;
-  let discountAmount = 0;
-  if (coupon_id) {
-    coupon = await prisma.coupon.findUniqueOrThrow({
-      where: {
-        id: coupon_id,
-      },
-    });
-    discountAmount = coupon.discount_value;
-  }
+  const contactNumber =
+    customer_information.contact_number || userInfo.contact_number;
 
   const orderItems = cart.cart_items.map((item) => ({
     product_id: item.product_id,
     quantity: item.quantity,
     price: item.price,
   }));
+
   const subAmount = orderItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
+
+  let discountAmount = 0;
+  let coupon: TApplyCouponResponse | null = null;
+
+  if (coupon_code) {
+    coupon = await CouponServices.applyCoupon({
+      code: coupon_code,
+      contact_number: contactNumber,
+      order_amount: subAmount,
+      product_amount: orderItems.length,
+      customer_type: userType,
+    });
+    discountAmount = coupon.discount_amount;
+  }
+
   const totalAmount = subAmount - discountAmount;
   const deliveryCharge =
     delivery_method === DeliveryMethod.STORE_PICKUP ? 0 : HOME_DELIVERY_CHARGE;
@@ -76,6 +91,7 @@ const createOrderForRegisteredUser = async (
       customer_information.contact_number || userInfo.contact_number,
     address: customer_information.address,
     city: customer_information.city,
+    coupon_id: coupon?.id || null,
   };
 
   const orderInfo = {
@@ -87,7 +103,7 @@ const createOrderForRegisteredUser = async (
     sub_amount: subAmount,
     total_amount: totalAmount,
     payable_amount: payableAmount,
-    coupon_id: coupon_id || null,
+    coupon_id: coupon?.id || null,
     comment: comment || null,
   };
 
@@ -111,17 +127,67 @@ const createOrderForRegisteredUser = async (
           create: orderItems,
         },
       },
-      include: {
-        user: {
+      select: {
+        id: true,
+        payment_method: true,
+        delivery_method: true,
+        delivery_charge: true,
+        discount_amount: true,
+        sub_amount: true,
+        total_amount: true,
+        payable_amount: true,
+        payment_status: true,
+        order_status: true,
+        comment: true,
+        order_items: {
           select: {
-            ...userSelectedFields,
+            product: {
+              select: {
+                name: true,
+              },
+            },
+            quantity: true,
+            price: true,
           },
         },
-        customer_info: true,
-        order_items: true,
-        coupon: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            contact_number: true,
+          },
+        },
+        customer_info: {
+          select: {
+            name: true,
+            contact_number: true,
+            email: true,
+            address: true,
+            city: true,
+          },
+        },
+        coupon: {
+          select: {
+            code: true,
+            discount_value: true,
+          },
+        },
       },
     });
+
+    if (order?.coupon?.code) {
+      await tx.coupon.update({
+        where: {
+          code: order.coupon.code,
+        },
+        data: {
+          used_count: {
+            increment: 1,
+          },
+        },
+      });
+    }
 
     await tx.cartItem.deleteMany({
       where: {

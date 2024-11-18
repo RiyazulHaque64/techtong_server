@@ -3,6 +3,7 @@ import ApiError from "../../error/ApiError";
 import { TAuthUser } from "../../interfaces/common";
 import prisma from "../../shared/prisma";
 import { TAddToCartPayload, TCartItem } from "./Cart.interfaces";
+import { UserRole } from "@prisma/client";
 
 const addToCart = async (
   user: TAuthUser | undefined,
@@ -14,50 +15,66 @@ const addToCart = async (
   const product = await prisma.product.findUniqueOrThrow({
     where: {
       id: payload.product_id,
+      is_deleted: false,
+    },
+    select: {
+      id: true,
+      price: true,
+      retailer_price: true,
     },
   });
 
-  if (payload.quantity === undefined || payload.quantity <= 0) {
-    await prisma.cartItem.deleteMany({
-      where: {
-        cart: {
-          user_id: user.id,
-        },
-        product_id: product.id,
-      },
-    });
-    return null;
+  let price;
+  switch (user.role) {
+    case UserRole.SUPER_ADMIN:
+      price = product.retailer_price || product.price;
+      break;
+    case UserRole.ADMIN:
+      price = product.retailer_price || product.price;
+      break;
+    case UserRole.RETAILER:
+      price = product.retailer_price || product.price;
+      break;
+    default:
+      price = product.price;
+      break;
   }
 
-  const cart = await prisma.cart.upsert({
-    where: {
-      user_id: user.id,
-    },
-    create: {
-      user_id: user.id,
-    },
-    update: {},
-  });
+  const result = await prisma.$transaction(async (tx) => {
+    const cart = await tx.cart.upsert({
+      where: {
+        user_id: user.id,
+      },
+      create: {
+        user_id: user.id,
+      },
+      update: {},
+    });
 
-  let cartItem = await prisma.cartItem.upsert({
-    where: {
-      cart_id_product_id: {
+    let cartItem = await tx.cartItem.upsert({
+      where: {
+        cart_id_product_id: {
+          cart_id: cart.id,
+          product_id: product.id,
+        },
+      },
+      create: {
         cart_id: cart.id,
         product_id: product.id,
+        quantity: payload.quantity,
+        price,
       },
-    },
-    create: {
-      cart_id: cart.id,
-      product_id: product.id,
-      quantity: payload.quantity,
-      price: product.price,
-    },
-    update: {
-      quantity: payload.quantity,
-    },
+      update: {
+        quantity: {
+          increment: payload.quantity,
+        },
+      },
+    });
+
+    return cartItem;
   });
 
-  return cartItem;
+  return result;
 };
 
 const getCart = async (user: TAuthUser | undefined) => {
@@ -90,6 +107,28 @@ const getCart = async (user: TAuthUser | undefined) => {
   };
 };
 
+const updateCartItem = async (id: string, payload: { quantity: number }) => {
+  if (payload.quantity === undefined || payload.quantity <= 0) {
+    await prisma.cartItem.delete({
+      where: {
+        id,
+      },
+    });
+    return null;
+  }
+
+  const cartItem = await prisma.cartItem.update({
+    where: {
+      id,
+    },
+    data: {
+      quantity: payload.quantity,
+    },
+  });
+
+  return cartItem;
+};
+
 const deleteToCart = async (
   user: TAuthUser | undefined,
   cartItemId: string
@@ -110,4 +149,9 @@ const deleteToCart = async (
   return null;
 };
 
-export const CartServices = { addToCart, getCart, deleteToCart };
+export const CartServices = {
+  addToCart,
+  getCart,
+  deleteToCart,
+  updateCartItem,
+};

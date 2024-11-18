@@ -21,3 +21,9 @@ export type TApplyCouponPayload = {
   product_amount: number;
   customer_type: "NEW" | "EXISTING" | "GUEST";
 };
+
+export type TApplyCouponResponse = {
+  id: string;
+  code: string;
+  discount_amount: number;
+};

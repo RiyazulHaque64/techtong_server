@@ -167,6 +167,80 @@
  *         description: If the request is invalid or missing required fields
  */
 
+// Update cart items
+/**
+ * @swagger
+ * /api/v1/cart/update/{cartItemId}:
+ *   patch:
+ *     summary: Update cart item quantity
+ *     description: Updates the quantity of a cart item
+ *     tags: [Cart]
+ *     security:
+ *       - AdminAuth: []
+ *       - RetailerAuth: []
+ *       - UserAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cartItemId
+ *         required: true
+ *         description: The ID of the cart item to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               quantity:
+ *                 type: number
+ *                 description: The quantity of the product to update cart item
+ *                 example: 2
+ *     responses:
+ *       201:
+ *         description: Successfully updated the cart item
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Indicates the success or failure of the operation
+ *                  message:
+ *                    type: string
+ *                    description: A message indicating the result of the operation
+ *                    example: Cart item updated successfully
+ *                  data:
+ *                    type: object
+ *                    description: A JSON object representing the cart item
+ *                    properties:
+ *                      id:
+ *                        type: string
+ *                        description: The ID of the cart item
+ *                        example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                      cart_id:
+ *                        type: string
+ *                        description: The ID of the cart
+ *                        example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                      product_id:
+ *                        type: string
+ *                        description: The ID of the product
+ *                        example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                      quantity:
+ *                        type: number
+ *                        description: The quantity of the product in the cart
+ *                        example: 1
+ *                      price:
+ *                        type: number
+ *                        description: The unit price of the product
+ *                        example: 2200
+ *       401:
+ *         description: If the user is not authenticated for the request.
+ *       400:
+ *         description: If the request is invalid or missing required fields
+ */
+
 // Remove product from cart
 /**
  * @swagger

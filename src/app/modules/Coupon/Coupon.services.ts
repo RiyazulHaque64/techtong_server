@@ -5,7 +5,11 @@ import {
   couponFieldsValidationConfig,
   couponSearchableFields,
 } from "./Coupon.constants";
-import { TApplyCouponPayload, TCouponPayload } from "./Coupon.interfaces";
+import {
+  TApplyCouponPayload,
+  TApplyCouponResponse,
+  TCouponPayload,
+} from "./Coupon.interfaces";
 import addFilter from "../../utils/addFilter";
 import validateQueryFields from "../../utils/validateQueryFields";
 import httpStatus from "http-status";
@@ -155,7 +159,9 @@ const updateCouponActiveStatus = async () => {
   console.log(`${updateDiactiveCoupons.count} diactive coupons activated`);
 };
 
-const applyCoupon = async (payload: TApplyCouponPayload) => {
+const applyCoupon = async (
+  payload: TApplyCouponPayload
+): Promise<TApplyCouponResponse> => {
   const {
     code,
     contact_number,

@@ -20,6 +20,13 @@ router.post(
   CartControllers.addToCart
 );
 
+router.patch(
+  "/update/:cartItemId",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),
+  validateRequest(CartValidations.updateCartItemValidationSchema),
+  CartControllers.updateCartItem
+);
+
 router.delete(
   "/:cartItemId",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),
