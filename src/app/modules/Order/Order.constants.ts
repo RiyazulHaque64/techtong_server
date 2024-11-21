@@ -1,8 +1,52 @@
-import { create } from "domain";
+import {
+  DeliveryMethod,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from "@prisma/client";
+import { sortOrderType } from "../../constants/common";
+
+export const orderSortableFields = [
+  "id",
+  "payment_method",
+  "delivery_method",
+  "order_status",
+  "payment_status",
+  "delivery_charge",
+  "discount_amount",
+  "sub_amount",
+  "total_amount",
+  "payable_amount",
+  "created_at",
+  "updated_at",
+];
+
+export const orderSearchableFields = ["comment"];
+export const orderSearchableFieldsWithCustomerInfo = [
+  "name",
+  "email",
+  "contact_number",
+  "address",
+  "city",
+];
+
+export const orderFilterableFields = [
+  "payment_method",
+  "delivery_method",
+  "order_status",
+  "payment_status",
+  "min_order_amount",
+  "max_order_amount",
+  "searchTerm",
+  "page",
+  "limit",
+  "sortBy",
+  "sortOrder",
+];
 
 export const HOME_DELIVERY_CHARGE: number = 65;
 
-export const OrderSelectedFieldsForRegisteredUser = {
+export const orderSelectedFields = {
   id: true,
   payment_method: true,
   delivery_method: true,
@@ -50,4 +94,13 @@ export const OrderSelectedFieldsForRegisteredUser = {
   },
   created_at: true,
   updated_at: true,
+};
+
+export const orderFieldsValidationConfig: Record<string, any> = {
+  payment_method: Object.values(PaymentMethod),
+  delivery_method: Object.values(DeliveryMethod),
+  order_status: Object.values(OrderStatus),
+  payment_status: Object.values(PaymentStatus),
+  sort_by: orderSortableFields,
+  sort_order: sortOrderType,
 };

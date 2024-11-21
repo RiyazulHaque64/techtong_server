@@ -4,6 +4,8 @@ import sendResponse from "../../shared/sendResponse";
 import { OrderServices } from "./Order.services";
 import { Request } from "express";
 import { TAuthUser } from "../../interfaces/common";
+import { pick } from "../../utils/pick";
+import { orderFilterableFields } from "./Order.constants";
 
 const createOrderForRegisteredUser = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
@@ -30,7 +32,35 @@ const createOrderForGuestUser = catchAsync(async (req: Request, res, next) => {
   });
 });
 
+const getOrders = catchAsync(async (req: Request, res, next) => {
+  const filteredQuery = pick(req.query, orderFilterableFields);
+  const result = await OrderServices.getOrders(filteredQuery);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Orders retrieved successfully",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
+const myOrder = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const filteredQuery = pick(req.query, orderFilterableFields);
+    const result = await OrderServices.myOrder(req.user, filteredQuery);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Your orders retrieved successfully",
+      meta: result.meta,
+      data: result.data,
+    });
+  }
+);
+
 export const OrderControllers = {
   createOrderForRegisteredUser,
   createOrderForGuestUser,
+  getOrders,
+  myOrder,
 };

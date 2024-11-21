@@ -1,4 +1,4 @@
-import { Coupon, DeliveryMethod, PaymentMethod } from "@prisma/client";
+import { DeliveryMethod, PaymentMethod, Prisma } from "@prisma/client";
 import { TAuthUser } from "../../interfaces/common";
 import prisma from "../../shared/prisma";
 import {
@@ -8,13 +8,18 @@ import {
 } from "./Order.interfaces";
 import {
   HOME_DELIVERY_CHARGE,
-  OrderSelectedFieldsForRegisteredUser,
+  orderFieldsValidationConfig,
+  orderSearchableFields,
+  orderSearchableFieldsWithCustomerInfo,
+  orderSelectedFields,
 } from "./Order.constants";
 import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
-import { userSelectedFields } from "../User/User.constants";
 import { CouponServices } from "../Coupon/Coupon.services";
 import { TApplyCouponResponse } from "../Coupon/Coupon.interfaces";
+import validateQueryFields from "../../utils/validateQueryFields";
+import pagination from "../../utils/pagination";
+import addFilter from "../../utils/addFilter";
 
 const createOrderForRegisteredUser = async (
   user: TAuthUser | undefined,
@@ -128,7 +133,7 @@ const createOrderForRegisteredUser = async (
         },
       },
       select: {
-        ...OrderSelectedFieldsForRegisteredUser,
+        ...orderSelectedFields,
       },
     });
 
@@ -259,7 +264,7 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
         },
       },
       select: {
-        ...OrderSelectedFieldsForRegisteredUser,
+        ...orderSelectedFields,
       },
     });
 
@@ -282,7 +287,234 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
   return result;
 };
 
+const getOrders = async (query: Record<string, any>) => {
+  const {
+    searchTerm,
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    min_order_amount,
+    max_order_amount,
+    ...remainingQuery
+  } = query;
+
+  if (sortBy)
+    validateQueryFields(orderFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(orderFieldsValidationConfig, "sort_order", sortOrder);
+
+  const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+  });
+
+  const andConditions: Prisma.OrderWhereInput[] = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      OR: [
+        ...orderSearchableFields.map((field) => ({
+          [field]: {
+            contains: searchTerm,
+            mode: "insensitive",
+          },
+        })),
+        {
+          customer_info: {
+            OR: orderSearchableFieldsWithCustomerInfo.map((field) => ({
+              [field]: {
+                contains: searchTerm,
+                mode: "insensitive",
+              },
+            })),
+          },
+        },
+        {
+          order_items: {
+            some: {
+              product: {
+                name: {
+                  contains: searchTerm,
+                  mode: "insensitive",
+                },
+              },
+            },
+          },
+        },
+        {
+          coupon: {
+            code: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+      ],
+    });
+  }
+
+  if (Object.keys(remainingQuery).length) {
+    for (const [key, value] of Object.entries(remainingQuery)) {
+      validateQueryFields(orderFieldsValidationConfig, key, value);
+      andConditions.push({
+        [key]: value === "true" ? true : value === "false" ? false : value,
+      });
+    }
+  }
+
+  addFilter(andConditions, "total_amount", "gte", Number(min_order_amount));
+  addFilter(andConditions, "total_amount", "lte", Number(max_order_amount));
+
+  const whereConditions = {
+    AND: andConditions,
+  };
+
+  const [result, total] = await Promise.all([
+    prisma.order.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+      select: {
+        ...orderSelectedFields,
+      },
+    }),
+    prisma.order.count({ where: whereConditions }),
+  ]);
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+    },
+    data: result,
+  };
+};
+
+const myOrder = async (
+  user: TAuthUser | undefined,
+  query: Record<string, any>
+) => {
+  const {
+    searchTerm,
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    min_order_amount,
+    max_order_amount,
+    ...remainingQuery
+  } = query;
+
+  if (sortBy)
+    validateQueryFields(orderFieldsValidationConfig, "sort_by", sortBy);
+  if (sortOrder)
+    validateQueryFields(orderFieldsValidationConfig, "sort_order", sortOrder);
+
+  const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+  });
+
+  console.log(user?.id);
+
+  const andConditions: Prisma.OrderWhereInput[] = [{ user_id: user?.id }];
+
+  if (searchTerm) {
+    andConditions.push({
+      OR: [
+        ...orderSearchableFields.map((field) => ({
+          [field]: {
+            contains: searchTerm,
+            mode: "insensitive",
+          },
+        })),
+        {
+          customer_info: {
+            OR: orderSearchableFieldsWithCustomerInfo.map((field) => ({
+              [field]: {
+                contains: searchTerm,
+                mode: "insensitive",
+              },
+            })),
+          },
+        },
+        {
+          order_items: {
+            some: {
+              product: {
+                name: {
+                  contains: searchTerm,
+                  mode: "insensitive",
+                },
+              },
+            },
+          },
+        },
+        {
+          coupon: {
+            code: {
+              contains: searchTerm,
+              mode: "insensitive",
+            },
+          },
+        },
+      ],
+    });
+  }
+
+  if (Object.keys(remainingQuery).length) {
+    for (const [key, value] of Object.entries(remainingQuery)) {
+      validateQueryFields(orderFieldsValidationConfig, key, value);
+      andConditions.push({
+        [key]: value === "true" ? true : value === "false" ? false : value,
+      });
+    }
+  }
+
+  addFilter(andConditions, "total_amount", "gte", Number(min_order_amount));
+  addFilter(andConditions, "total_amount", "lte", Number(max_order_amount));
+
+  const whereConditions = {
+    AND: andConditions,
+  };
+
+  const [result, total] = await Promise.all([
+    prisma.order.findMany({
+      where: whereConditions,
+      skip: skip,
+      take: limitNumber,
+      orderBy: {
+        [sortWith]: sortSequence,
+      },
+      select: {
+        ...orderSelectedFields,
+      },
+    }),
+    prisma.order.count({ where: whereConditions }),
+  ]);
+
+  return {
+    meta: {
+      page: pageNumber,
+      limit: limitNumber,
+      total,
+    },
+    data: result,
+  };
+};
+
 export const OrderServices = {
   createOrderForRegisteredUser,
   createOrderForGuestUser,
+  getOrders,
+  myOrder,
 };
