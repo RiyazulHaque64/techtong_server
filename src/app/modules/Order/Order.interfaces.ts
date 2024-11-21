@@ -25,7 +25,7 @@ export type TCreateOrderForGuestUser = {
   order_items: TOrderItem[];
   payment_method?: PaymentMethod;
   delivery_method?: DeliveryMethod;
-  coupon_id?: string;
+  coupon_code?: string;
   comment?: string;
 };
 

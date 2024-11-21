@@ -128,51 +128,7 @@ const createOrderForRegisteredUser = async (
         },
       },
       select: {
-        id: true,
-        payment_method: true,
-        delivery_method: true,
-        delivery_charge: true,
-        discount_amount: true,
-        sub_amount: true,
-        total_amount: true,
-        payable_amount: true,
-        payment_status: true,
-        order_status: true,
-        comment: true,
-        order_items: {
-          select: {
-            product: {
-              select: {
-                name: true,
-              },
-            },
-            quantity: true,
-            price: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            contact_number: true,
-          },
-        },
-        customer_info: {
-          select: {
-            name: true,
-            contact_number: true,
-            email: true,
-            address: true,
-            city: true,
-          },
-        },
-        coupon: {
-          select: {
-            code: true,
-            discount_value: true,
-          },
-        },
+        ...OrderSelectedFieldsForRegisteredUser,
       },
     });
 
@@ -205,7 +161,7 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
   const {
     customer_information,
     order_items,
-    coupon_id,
+    coupon_code,
     delivery_method,
     payment_method,
     comment,
@@ -228,17 +184,6 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
     );
   }
 
-  let coupon: Coupon | null;
-  let discountAmount = 0;
-  if (coupon_id) {
-    coupon = await prisma.coupon.findUniqueOrThrow({
-      where: {
-        id: coupon_id,
-      },
-    });
-    discountAmount = coupon.discount_value;
-  }
-
   const itemsToCreateOrder = products.map((product) => {
     const item = order_items.find((item) => item.product_id === product.id);
     return {
@@ -247,10 +192,26 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
       price: product.price,
     };
   });
+
   const subAmount = itemsToCreateOrder.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
+
+  let discountAmount = 0;
+  let coupon: TApplyCouponResponse | null = null;
+
+  if (coupon_code) {
+    coupon = await CouponServices.applyCoupon({
+      code: coupon_code,
+      contact_number: customer_information.contact_number,
+      order_amount: subAmount,
+      product_amount: itemsToCreateOrder.length,
+      customer_type: "GUEST",
+    });
+    discountAmount = coupon.discount_amount;
+  }
+
   const totalAmount = subAmount - discountAmount;
   const deliveryCharge =
     delivery_method === DeliveryMethod.STORE_PICKUP ? 0 : HOME_DELIVERY_CHARGE;
@@ -258,10 +219,11 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
 
   const customerInfo = {
     name: customer_information.name,
-    email: customer_information.email || null,
+    email: customer_information.email,
     contact_number: customer_information.contact_number,
     address: customer_information.address,
     city: customer_information.city,
+    coupon_id: coupon?.id || null,
   };
 
   const orderInfo = {
@@ -272,7 +234,7 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
     sub_amount: subAmount,
     total_amount: totalAmount,
     payable_amount: payableAmount,
-    coupon_id: coupon_id || null,
+    coupon_id: coupon?.id || null,
     comment: comment || null,
   };
 
@@ -296,17 +258,23 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
           create: itemsToCreateOrder,
         },
       },
-      include: {
-        user: {
-          select: {
-            ...userSelectedFields,
-          },
-        },
-        customer_info: true,
-        order_items: true,
-        coupon: true,
+      select: {
+        ...OrderSelectedFieldsForRegisteredUser,
       },
     });
+
+    if (order?.coupon?.code) {
+      await tx.coupon.update({
+        where: {
+          code: order.coupon.code,
+        },
+        data: {
+          used_count: {
+            increment: 1,
+          },
+        },
+      });
+    }
 
     return order;
   });

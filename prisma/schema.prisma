@@ -132,8 +132,10 @@ model Order {
   sub_amount       Int
   total_amount     Int
   payable_amount   Int
-  coupon_id        String?        @unique
+  coupon_id        String?
   comment          String?
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
 
   user          User?        @relation(fields: [user_id], references: [id])
   coupon        Coupon?      @relation(fields: [coupon_id], references: [id])
@@ -186,7 +188,7 @@ model Coupon {
   beneficiary_type   BeneficiaryType @default(ALL)
   created_at         DateTime        @default(now())
   updated_at         DateTime        @updatedAt
-  order              Order?
+  order              Order[]
   customerInfo       CustomerInfo[]
 }
 

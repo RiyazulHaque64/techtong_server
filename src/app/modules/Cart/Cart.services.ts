@@ -21,22 +21,23 @@ const addToCart = async (
       id: true,
       price: true,
       retailer_price: true,
+      discount_price: true,
     },
   });
 
   let price;
   switch (user.role) {
     case UserRole.SUPER_ADMIN:
-      price = product.retailer_price || product.price;
+      price = product.retailer_price || product.discount_price || product.price;
       break;
     case UserRole.ADMIN:
-      price = product.retailer_price || product.price;
+      price = product.retailer_price || product.discount_price || product.price;
       break;
     case UserRole.RETAILER:
-      price = product.retailer_price || product.price;
+      price = product.retailer_price || product.discount_price || product.price;
       break;
     default:
-      price = product.price;
+      price = product.discount_price || product.price;
       break;
   }
 

@@ -1,3 +1,5 @@
+import { create } from "domain";
+
 export const HOME_DELIVERY_CHARGE: number = 65;
 
 export const OrderSelectedFieldsForRegisteredUser = {
@@ -14,7 +16,11 @@ export const OrderSelectedFieldsForRegisteredUser = {
   comment: true,
   order_items: {
     select: {
-      product_id: true,
+      product: {
+        select: {
+          name: true,
+        },
+      },
       quantity: true,
       price: true,
     },
@@ -42,4 +48,6 @@ export const OrderSelectedFieldsForRegisteredUser = {
       discount_value: true,
     },
   },
+  created_at: true,
+  updated_at: true,
 };

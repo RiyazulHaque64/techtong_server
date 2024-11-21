@@ -95,8 +95,9 @@ const createOrderForGuestUserValidationSchema = z.object({
                   "Invalid Product"
                 ),
               quantity: z
-                .number({ required_error: "Quantity is required" })
-                .nonnegative({ message: "Quantity must be a positive number" }),
+                .number({ invalid_type_error: "Quantity must be a number" })
+                .nonnegative({ message: "Quantity must be a positive number" })
+                .optional(),
             })
             .strict()
         )
@@ -107,14 +108,11 @@ const createOrderForGuestUserValidationSchema = z.object({
       delivery_method: z
         .enum(Object.values(DeliveryMethod) as [string, ...string[]])
         .optional(),
-      coupon_id: z
+      coupon_code: z
         .string({
-          invalid_type_error: "Coupon id must be a text",
+          invalid_type_error: "Coupon code must be a text",
         })
-        .regex(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-          "Invalid Coupon"
-        )
+        .min(1, "Coupon code should not empty string")
         .optional(),
       comment: z
         .string({ invalid_type_error: "Comment must be a text" })

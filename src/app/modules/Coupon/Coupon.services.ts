@@ -220,7 +220,7 @@ const applyCoupon = async (
   if (coupon.min_order_amount && order_amount < coupon.min_order_amount) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "Order amount is less than the minimum required for this coupon"
+      `To apply this coupon, the order amount must be at least ${coupon.min_order_amount}`
     );
   }
 
@@ -228,7 +228,7 @@ const applyCoupon = async (
   if (coupon.min_product_amount && product_amount < coupon.min_product_amount) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "Product amount is less than the minimum required for this coupon"
+      `To apply this coupon, you must buy at least ${coupon.min_product_amount} products`
     );
   }
 
