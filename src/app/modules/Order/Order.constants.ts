@@ -104,3 +104,11 @@ export const orderFieldsValidationConfig: Record<string, any> = {
   sort_by: orderSortableFields,
   sort_order: sortOrderType,
 };
+
+export const allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ["PROCESSING", "CANCELLED"],
+  PROCESSING: ["SHIPPED", "CANCELLED"],
+  SHIPPED: ["DELIVERED", "CANCELLED"],
+  DELIVERED: [],
+  CANCELLED: [],
+};

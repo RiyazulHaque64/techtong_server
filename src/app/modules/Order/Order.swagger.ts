@@ -651,3 +651,70 @@
  *                    items:
  *                      $ref: '#/components/schemas/Order'
  */
+
+// Update order by admin
+/**
+ * @swagger
+ * /api/v1/order/admin/{id}:
+ *   patch:
+ *     summary: Update order by admin
+ *     description: Update order by admin
+ *     tags: [Order]
+ *     security:
+ *       - AdminAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique ID of the order
+ *     requestBody:
+ *       description: Data to update order
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               payment_method:
+ *                 type: string
+ *                 description: The payment method for the order
+ *                 example: CASH_ON_DELIVERY | ONLINE_PAYMENT
+ *               delivery_method:
+ *                 type: string
+ *                 description: The delivery method for the order
+ *                 example: STORE_PICKUP | HOME_DELIVERY
+ *               payment_status:
+ *                 type: string
+ *                 description: The payment status for the order
+ *                 example: PAID | DUE
+ *               order_status:
+ *                 type: string
+ *                 description: The order status for the order
+ *                 example: PENDING | PROCESSING | SHIPPED | DELIVERED | CANCELLED
+ *               comment:
+ *                 type: string
+ *                 description: The comment for the order
+ *                 example: Special instructions for the order
+ *     responses:
+ *       200:
+ *         description: If the order is updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Indicates the success or failure of the operation
+ *                  message:
+ *                    type: string
+ *                    description: A message indicating the result of the operation
+ *                    example: Order updated successfully
+ *                  data:
+ *                    $ref: '#/components/schemas/Order'
+ *       401:
+ *         description: If the user is not authenticated for the request. Only admin can update a order
+ *       400:
+ *         description: If the request is invalid or missing required fields
+ */

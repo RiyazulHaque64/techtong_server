@@ -5,8 +5,10 @@ import {
   TCreateOrderForGuestUser,
   TCreateOrderForRegisteredUser,
   TOrderItem,
+  TUpdateOrderByAdminPayload,
 } from "./Order.interfaces";
 import {
+  allowedTransitions,
   HOME_DELIVERY_CHARGE,
   orderFieldsValidationConfig,
   orderSearchableFields,
@@ -512,9 +514,76 @@ const myOrder = async (
   };
 };
 
+const updateOrderByAdmin = async (
+  id: string,
+  payload: TUpdateOrderByAdminPayload
+) => {
+  const order = await prisma.order.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    select: {
+      order_status: true,
+      payment_status: true,
+    },
+  });
+
+  // Check if the status transition is valid
+  const currentOrderStatus = order.order_status;
+  const newOrderStatus = payload.order_status;
+  if (
+    newOrderStatus &&
+    !allowedTransitions[currentOrderStatus].includes(newOrderStatus)
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Invalid status transition from ${currentOrderStatus} to ${newOrderStatus}`
+    );
+  }
+
+  // Check payment status to deliver an order
+  if (
+    newOrderStatus === "DELIVERED" &&
+    order.payment_status === "DUE" &&
+    payload.payment_status !== "PAID"
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Cannot deliver an order without payment`
+    );
+  }
+
+  // Check payment status update after order is delivered
+  if (
+    (currentOrderStatus === "DELIVERED" || newOrderStatus === "DELIVERED") &&
+    payload.payment_status === "DUE"
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Cannot transition from PAID to DUE after order is delivered`
+    );
+  }
+
+  if (order.payment_status === "PAID" && payload.payment_method) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Cannot update payment method after the payment is completed`
+    );
+  }
+
+  const result = await prisma.order.update({
+    where: {
+      id,
+    },
+    data: payload,
+  });
+  return result;
+};
+
 export const OrderServices = {
   createOrderForRegisteredUser,
   createOrderForGuestUser,
   getOrders,
   myOrder,
+  updateOrderByAdmin,
 };

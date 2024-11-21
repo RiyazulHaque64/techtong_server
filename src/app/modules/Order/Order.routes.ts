@@ -34,4 +34,11 @@ router.post(
   OrderControllers.createOrderForRegisteredUser
 );
 
+router.patch(
+  "/admin/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(OrderValidations.updateOrderByAdminValidationSchema),
+  OrderControllers.updateOrderByAdmin
+);
+
 export const OrderRoutes = router;

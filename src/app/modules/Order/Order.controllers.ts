@@ -58,9 +58,23 @@ const myOrder = catchAsync(
   }
 );
 
+const updateOrderByAdmin = catchAsync(async (req, res, next) => {
+  const result = await OrderServices.updateOrderByAdmin(
+    req.params.id,
+    req.body
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Order updated successfully",
+    data: result,
+  });
+});
+
 export const OrderControllers = {
   createOrderForRegisteredUser,
   createOrderForGuestUser,
   getOrders,
   myOrder,
+  updateOrderByAdmin,
 };

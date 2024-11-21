@@ -1,4 +1,9 @@
-import { DeliveryMethod, PaymentMethod } from "@prisma/client";
+import {
+  DeliveryMethod,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from "@prisma/client";
 import { z } from "zod";
 
 const createOrderForRegisteredUserValidationSchema = z.object({
@@ -121,7 +126,30 @@ const createOrderForGuestUserValidationSchema = z.object({
     .strict(),
 });
 
+const updateOrderByAdminValidationSchema = z.object({
+  body: z
+    .object({
+      delivery_method: z
+        .enum(Object.values(DeliveryMethod) as [string, ...string[]])
+        .optional(),
+      payment_method: z
+        .enum(Object.values(PaymentMethod) as [string, ...string[]])
+        .optional(),
+      order_status: z
+        .enum(Object.values(OrderStatus) as [string, ...string[]])
+        .optional(),
+      payment_status: z
+        .enum(Object.values(PaymentStatus) as [string, ...string[]])
+        .optional(),
+      comment: z
+        .string({ invalid_type_error: "Comment must be a text" })
+        .optional(),
+    })
+    .strict(),
+});
+
 export const OrderValidations = {
   createOrderForRegisteredUserValidationSchema,
   createOrderForGuestUserValidationSchema,
+  updateOrderByAdminValidationSchema,
 };

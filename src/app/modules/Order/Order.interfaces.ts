@@ -1,4 +1,9 @@
-import { DeliveryMethod, PaymentMethod } from "@prisma/client";
+import {
+  DeliveryMethod,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from "@prisma/client";
 
 export type TCreateOrderForRegisteredUser = {
   customer_information: {
@@ -32,4 +37,12 @@ export type TCreateOrderForGuestUser = {
 export type TOrderItem = {
   product_id: string;
   quantity: number;
+};
+
+export type TUpdateOrderByAdminPayload = {
+  delivery_method?: DeliveryMethod;
+  payment_method?: PaymentMethod;
+  order_status?: OrderStatus;
+  payment_status?: PaymentStatus;
+  comment?: string;
 };
