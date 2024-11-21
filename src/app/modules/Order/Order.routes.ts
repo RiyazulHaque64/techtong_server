@@ -41,4 +41,11 @@ router.patch(
   OrderControllers.updateOrderByAdmin
 );
 
+router.patch(
+  "/:id",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),
+  validateRequest(OrderValidations.updateOrderByCustomerValidationSchema),
+  OrderControllers.updateOrderByCustomer
+);
+
 export const OrderRoutes = router;

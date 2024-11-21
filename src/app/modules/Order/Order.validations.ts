@@ -148,8 +148,56 @@ const updateOrderByAdminValidationSchema = z.object({
     .strict(),
 });
 
+const updateOrderByCustomerValidationSchema = z.object({
+  body: z
+    .object({
+      payment_method: z
+        .enum(Object.values(PaymentMethod) as [string, ...string[]])
+        .optional(),
+      delivery_method: z
+        .enum(Object.values(DeliveryMethod) as [string, ...string[]])
+        .optional(),
+      comment: z
+        .string({ invalid_type_error: "Comment must be a text" })
+        .optional(),
+      customer_information: z
+        .object({
+          name: z
+            .string({
+              invalid_type_error: "Name must be a text",
+            })
+            .min(1, "Name should not empty string")
+            .optional(),
+          email: z.string().email({ message: "Invalid email" }).optional(),
+          contact_number: z
+            .string()
+            .regex(/^01\d{9}$/, {
+              message:
+                "Contact number must be a valid Bangladeshi number like as 01511111111",
+            })
+            .optional(),
+          address: z
+            .string({
+              invalid_type_error: "Address must be a text",
+            })
+            .min(1, "Address should not empty string")
+            .optional(),
+          city: z
+            .string({
+              invalid_type_error: "City must be a text",
+            })
+            .min(1, "City should not empty string")
+            .optional(),
+        })
+        .strict()
+        .optional(),
+    })
+    .strict(),
+});
+
 export const OrderValidations = {
   createOrderForRegisteredUserValidationSchema,
   createOrderForGuestUserValidationSchema,
   updateOrderByAdminValidationSchema,
+  updateOrderByCustomerValidationSchema,
 };

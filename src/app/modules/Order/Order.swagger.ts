@@ -718,3 +718,87 @@
  *       400:
  *         description: If the request is invalid or missing required fields
  */
+
+// Update order by customer
+/**
+ * @swagger
+ * /api/v1/order/{id}:
+ *   patch:
+ *     summary: Update order by customer
+ *     description: Update order by customer
+ *     tags: [Order]
+ *     security:
+ *       - AdminAuth: []
+ *       - UserAuth: []
+ *       - RetailerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique ID of the order
+ *     requestBody:
+ *       description: Data to update order
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               payment_method:
+ *                 type: string
+ *                 description: The payment method for the order
+ *                 example: CASH_ON_DELIVERY | ONLINE_PAYMENT
+ *               delivery_method:
+ *                 type: string
+ *                 description: The delivery method for the order
+ *                 example: STORE_PICKUP | HOME_DELIVERY
+ *               comment:
+ *                 type: string
+ *                 description: The comment for the order
+ *                 example: Special instructions for the order
+ *               customer_information:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     description: The name of the customer
+ *                     example: John Doe
+ *                   email:
+ *                     type: string
+ *                     description: The email of the customer
+ *                     example: 2tZPb@example.com
+ *                   contact_number:
+ *                     type: string
+ *                     description: The contact number of the customer
+ *                     example: '01500000000'
+ *                   address:
+ *                     type: string
+ *                     description: The address of the customer
+ *                     example: 123 Main St, City, Country
+ *                   city:
+ *                     type: string
+ *                     description: The city of the customer
+ *                     example: New York
+ *     responses:
+ *       200:
+ *         description: If the order is updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                  success:
+ *                    type: boolean
+ *                    description: Indicates the success or failure of the operation
+ *                  message:
+ *                    type: string
+ *                    description: A message indicating the result of the operation
+ *                    example: Order updated successfully
+ *                  data:
+ *                    $ref: '#/components/schemas/Order'
+ *       401:
+ *         description: If the user is not authenticated for the request. Only registered users can update a order
+ *       400:
+ *         description: If the request is invalid or missing required fields
+ */

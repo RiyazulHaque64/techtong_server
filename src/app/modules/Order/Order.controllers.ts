@@ -71,10 +71,27 @@ const updateOrderByAdmin = catchAsync(async (req, res, next) => {
   });
 });
 
+const updateOrderByCustomer = catchAsync(
+  async (req: Request & { user?: TAuthUser }, res, next) => {
+    const result = await OrderServices.updateOrderByCustomer(
+      req.user,
+      req.params.id,
+      req.body
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Order updated successfully",
+      data: result,
+    });
+  }
+);
+
 export const OrderControllers = {
   createOrderForRegisteredUser,
   createOrderForGuestUser,
   getOrders,
   myOrder,
   updateOrderByAdmin,
+  updateOrderByCustomer,
 };

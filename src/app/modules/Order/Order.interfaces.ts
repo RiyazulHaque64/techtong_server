@@ -46,3 +46,16 @@ export type TUpdateOrderByAdminPayload = {
   payment_status?: PaymentStatus;
   comment?: string;
 };
+
+export type TUpdateOrderByCustomerPayload = {
+  delivery_method?: DeliveryMethod;
+  payment_method?: PaymentMethod;
+  comment?: string;
+  customer_information?: {
+    name?: string;
+    email?: string;
+    contact_number?: string;
+    address?: string;
+    city?: string;
+  };
+};

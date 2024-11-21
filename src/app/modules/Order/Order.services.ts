@@ -6,6 +6,7 @@ import {
   TCreateOrderForRegisteredUser,
   TOrderItem,
   TUpdateOrderByAdminPayload,
+  TUpdateOrderByCustomerPayload,
 } from "./Order.interfaces";
 import {
   allowedTransitions,
@@ -580,10 +581,75 @@ const updateOrderByAdmin = async (
   return result;
 };
 
+const updateOrderByCustomer = async (
+  user: TAuthUser | undefined,
+  id: string,
+  payload: TUpdateOrderByCustomerPayload
+) => {
+  const { customer_information, ...remainingPayload } = payload;
+
+  const order = await prisma.order.findUniqueOrThrow({
+    where: {
+      user_id: user?.id,
+      id,
+    },
+  });
+
+  if (
+    (order.order_status === "DELIVERED" || order.payment_status === "PAID") &&
+    payload.payment_method
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Cannot update payment method after the payment is completed`
+    );
+  }
+
+  if (
+    (order.order_status === "SHIPPED" || order.order_status === "DELIVERED") &&
+    payload.delivery_method
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Cannot update delivery method after the order is shipped or delivered`
+    );
+  }
+
+  if (
+    (order.order_status === "SHIPPED" || order.order_status === "DELIVERED") &&
+    customer_information &&
+    Object.values(customer_information).length
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Cannot update customer information after the order is shipped or delivered`
+    );
+  }
+
+  const result = await prisma.order.update({
+    where: {
+      user_id: user?.id,
+      id,
+    },
+    data: {
+      ...remainingPayload,
+      customer_info: {
+        update: customer_information,
+      },
+    },
+    include: {
+      customer_info: true,
+    },
+  });
+
+  return result;
+};
+
 export const OrderServices = {
   createOrderForRegisteredUser,
   createOrderForGuestUser,
   getOrders,
   myOrder,
   updateOrderByAdmin,
+  updateOrderByCustomer,
 };
