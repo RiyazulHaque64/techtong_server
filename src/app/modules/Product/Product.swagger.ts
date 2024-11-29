@@ -97,6 +97,11 @@
  *                   type: string
  *                 description: The key features of the product
  *                 example: ["Feature 1", "Feature 2", "Feature 3"]
+ *               video_url:
+ *                 type: string
+ *                 format: uri
+ *                 description: The video url of the product
+ *                 example: https://example.com/video_url.mp4
  *               attributes:
  *                 type: array
  *                 items:
@@ -217,6 +222,11 @@
  *                          type: string
  *                        description: The key features of the new product
  *                        example: [Feature 1, Feature 2, Feature 3]
+ *                      video_url:
+ *                        type: string
+ *                        format: uri
+ *                        description: The video url of the product
+ *                        example: https://example.com/video_url.mp4
  *                      attributes:
  *                        type: array
  *                        items:
@@ -487,6 +497,11 @@
  *                            type: string
  *                          description: The key features of the product
  *                          example: ["Feature 1", "Feature 2", "Feature 3"]
+ *                        video_url:
+ *                          type: string
+ *                          format: uri
+ *                          description: The video url of the product
+ *                          example: https://example.com/video_url.mp4
  *                        attributes:
  *                          type: array
  *                          items:
@@ -682,6 +697,11 @@
  *                          type: string
  *                        description: The key features of the product
  *                        example: [Feature 1, Feature 2, Feature 3]
+ *                      video_url:
+ *                        type: string
+ *                        format: uri
+ *                        description: The video url of the product
+ *                        example: https://example.com/video_url.mp4
  *                      attributes:
  *                        type: array
  *                        items:
@@ -845,6 +865,11 @@
  *                   type: string
  *                 description: The key features of the product
  *                 example: ["Feature 1", "Feature 2", "Feature 3"]
+ *               video_url:
+ *                 type: string
+ *                 format: uri
+ *                 description: The video url of the product
+ *                 example: https://example.com/video_url.mp4
  *               attributes:
  *                 type: array
  *                 items:
@@ -973,6 +998,11 @@
  *                          type: string
  *                        description: The key features of the new product
  *                        example: [Feature 1, Feature 2, Feature 3]
+ *                      video_url:
+ *                        type: string
+ *                        format: uri
+ *                        description: The video url of the product
+ *                        example: https://example.com/video_url.mp4
  *                      attributes:
  *                        type: array
  *                        items:

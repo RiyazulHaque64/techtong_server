@@ -162,4 +162,24 @@ switch (role) {
     break;
 }
 
-console.log(price);
+export function generatePassword(length) {
+  const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = "0123456789";
+  const characters = letters + numbers;
+
+  let password = "";
+
+  for (let i = 0; i < Math.floor(length / 2); i++) {
+    const randomIndex = Math.floor(Math.random() * letters.length);
+    password += letters[randomIndex];
+    for (let i = 0; i < 1; i++) {
+      const randomIndex = Math.floor(Math.random() * numbers.length);
+      password += numbers[randomIndex];
+    }
+  }
+
+  return password;
+}
+
+const result = generatePassword(7);
+console.log("generated password: ", result);

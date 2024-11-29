@@ -181,6 +181,10 @@ const updateProductValidationSchema = z.object({
       key_features: z
         .array(z.string({ invalid_type_error: "Key feature must be a text" }))
         .optional(),
+      video_url: z
+        .string({ invalid_type_error: "Video url must be a valid URL" })
+        .url("Video url must be a valid URL")
+        .optional(),
       attributes: z
         .array(z.object({ slug: z.string(), value: z.string() }))
         .optional(),

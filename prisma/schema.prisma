@@ -51,6 +51,7 @@ model Product {
   specification          String? //html
   additional_information String? //html
   key_features           String[]    @default([])
+  video_url              String?
   attributes             Json?
   is_deleted             Boolean     @default(false)
   created_at             DateTime    @default(now())

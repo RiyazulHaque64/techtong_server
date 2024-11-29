@@ -16,5 +16,6 @@ export interface IProductPayload {
   specification?: string;
   additional_information?: string;
   key_features?: string[];
+  video_url?: string;
   attributes?: [{ slug: string; value: string }];
 }

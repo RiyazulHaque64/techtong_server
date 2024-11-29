@@ -127,7 +127,7 @@ const login = async (credential: ILoginCredential) => {
   if (!checkPassword) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
-      "Email, contact number or password is invalid"
+      "Email/Contact number or password is invalid"
     );
   }
 
