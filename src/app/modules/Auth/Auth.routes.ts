@@ -27,6 +27,8 @@ router.post(
   AuthControllers.login
 );
 
+router.post("/access-token", AuthControllers.getAccessToken);
+
 router.post(
   "/reset-password",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.RETAILER, UserRole.USER),

@@ -20,5 +20,7 @@ declare namespace NodeJS {
     TWILIO_PHONE_NUMBER: string;
     APP_EMAIL_ADDRESS: string;
     EMAIL_APP_PASS: string;
+    SUPABASE_BUCKET_URL: string;
+    SUPABASE_BUCKET_KEY: string;
   }
 }

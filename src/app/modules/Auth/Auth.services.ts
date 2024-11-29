@@ -4,7 +4,7 @@ import httpStatus from "http-status";
 import config from "../../../config";
 import ApiError from "../../error/ApiError";
 import prisma from "../../shared/prisma";
-import { generateToken } from "../../utils/jwtHelpers";
+import { generateToken, verifyToken } from "../../utils/jwtHelpers";
 import {
   IChangePasswordPayload,
   IOTPCreatePayload,
@@ -131,16 +131,11 @@ const login = async (credential: ILoginCredential) => {
     );
   }
 
-  const passwordChangedTime = Math.floor(
-    new Date(user.password_changed_at).getTime() / 1000
-  );
-
   const jwtPayload = {
     id: user.id,
     contact_number: user.contact_number,
     email: user.email,
     role: user.role,
-    password_changed_at: passwordChangedTime,
   };
 
   const accessToken = generateToken(
@@ -164,6 +159,60 @@ const login = async (credential: ILoginCredential) => {
     profile_pic: user.profile_pic,
     access_token: accessToken,
     refreshToken,
+  };
+};
+
+const getAccessToken = async (token: string) => {
+  if (!token) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Token not found");
+  }
+
+  const verifiedUser = verifyToken(
+    token,
+    config.jwt_refresh_secret
+  ) as TAuthUser;
+
+  const user = await prisma.user.findFirst({
+    where: {
+      id: verifiedUser.id,
+      status: UserStatus.ACTIVE,
+      is_deleted: false,
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const passwordChangedTime = Math.floor(
+    new Date(user.password_changed_at).getTime() / 1000
+  );
+
+  if (passwordChangedTime > verifiedUser.iat) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized");
+  }
+
+  const jwtPayload = {
+    id: user.id,
+    contact_number: user.contact_number,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = generateToken(
+    jwtPayload,
+    config.jwt_access_secret,
+    config.jwt_access_expiresin
+  );
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    contact_number: user.contact_number,
+    role: user.role,
+    profile_pic: user.profile_pic,
+    access_token: accessToken,
   };
 };
 
@@ -274,4 +323,5 @@ export const AuthServices = {
   login,
   resetPassword,
   forgotPassword,
+  getAccessToken,
 };

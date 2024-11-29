@@ -23,4 +23,6 @@ export default {
   twilio_phone_number: process.env.TWILIO_PHONE_NUMBER,
   app_email_address: process.env.APP_EMAIL_ADDRESS,
   email_app_pass: process.env.EMAIL_APP_PASS,
+  supabase_bucket_url: process.env.SUPABASE_BUCKET_URL,
+  supabase_bucket_key: process.env.SUPABASE_BUCKET_KEY,
 };

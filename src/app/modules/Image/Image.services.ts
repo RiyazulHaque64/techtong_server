@@ -13,6 +13,7 @@ import {
 } from "./Image.constant";
 import path from "path";
 import validateQueryFields from "../../utils/validateQueryFields";
+import supabase from "../../shared/supabase";
 
 const uploadImages = async (req: Request) => {
   const files = req.files as TFiles;
@@ -26,29 +27,40 @@ const uploadImages = async (req: Request) => {
   if (files?.images) {
     for (let i = 0; i < files.images.length; i++) {
       const file = files.images[i];
-      const convertedFile = Buffer.from(file.buffer).toString("base64");
-      const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
-      const cloudinaryResponse = (await fileUploader.uploadToCloudinary(
-        dataURI
-      )) as TCloudinaryResponse;
-      const fileName = path.parse(file.originalname).name;
-      images.push({
-        name: fileName,
-        path: cloudinaryResponse?.secure_url,
-        cloud_id: cloudinaryResponse?.public_id,
-      });
+      const fileName = `${Date.now()}_${file.originalname}`;
+
+      const { data, error } = await supabase.storage
+        .from("techtong")
+        .upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+        });
+
+      console.log({ data, error });
+
+      // const convertedFile = Buffer.from(file.buffer).toString("base64");
+      // const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
+      // const cloudinaryResponse = (await fileUploader.uploadToCloudinary(
+      //   dataURI
+      // )) as TCloudinaryResponse;
+      // const fileName = path.parse(file.originalname).name;
+      // images.push({
+      //   name: fileName,
+      //   path: cloudinaryResponse?.secure_url,
+      //   cloud_id: cloudinaryResponse?.public_id,
+      // });
     }
   }
 
-  const result = await prisma.image.createMany({
-    data: images,
-    skipDuplicates: true,
-  });
+  // const result = await prisma.image.createMany({
+  //   data: images,
+  //   skipDuplicates: true,
+  // });
 
-  return {
-    uploaded_count: result.count,
-    message: `${result.count} image has been uploaded`,
-  };
+  // return {
+  //   uploaded_count: result.count,
+  //   message: `${result.count} image has been uploaded`,
+  // };
+  return null;
 };
 
 const getImages = async (query: Record<string, any>) => {

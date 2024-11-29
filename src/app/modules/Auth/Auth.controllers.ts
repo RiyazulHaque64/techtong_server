@@ -38,6 +38,17 @@ const login = catchAsync(async (req, res, next) => {
   });
 });
 
+const getAccessToken = catchAsync(async (req, res, next) => {
+  console.log(req.cookies);
+  const result = await AuthServices.getAccessToken(req.cookies?.refresh_token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Access token generated successfully",
+    data: result,
+  });
+});
+
 const resetPassword = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
     const result = await AuthServices.resetPassword(req?.user, req.body);
@@ -68,4 +79,5 @@ export const AuthControllers = {
   login,
   resetPassword,
   forgotPassword,
+  getAccessToken,
 };
