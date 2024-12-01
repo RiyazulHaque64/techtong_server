@@ -5,9 +5,10 @@ import { Prisma } from "@prisma/client";
 import { fileUploader } from "../../utils/fileUploader";
 import prisma from "../../shared/prisma";
 import { Request } from "express";
-import { TDeleteImagePayload } from "./Image.interfaces";
+import { TDeleteImagePayload, TUpdateImagePayload } from "./Image.interfaces";
 import pagination from "../../utils/pagination";
 import {
+  allowedImageType,
   imageFieldsValidationConfig,
   imageSearchableFields,
 } from "./Image.constant";
@@ -16,6 +17,8 @@ import validateQueryFields from "../../utils/validateQueryFields";
 import supabase from "../../shared/supabase";
 import sharp from "sharp";
 import { TAuthUser } from "../../interfaces/common";
+import config from "../../../config";
+import { validDateChecker } from "../../utils/checker";
 
 const uploadImages = async (req: Request & { user?: TAuthUser }) => {
   const files = req.files as TFiles;
@@ -30,10 +33,13 @@ const uploadImages = async (req: Request & { user?: TAuthUser }) => {
   if (files?.images) {
     for (let i = 0; i < files.images.length; i++) {
       const file = files.images[i];
+      console.log(file);
+      if (!allowedImageType.includes(file.mimetype)) {
+        continue;
+      }
       const metadata = await sharp(file.buffer).metadata();
-
       const { data } = await supabase.storage
-        .from("techtong")
+        .from(config.supabase_bucket_name)
         .upload(file.originalname, file.buffer, {
           contentType: file.mimetype,
         });
@@ -66,7 +72,8 @@ const uploadImages = async (req: Request & { user?: TAuthUser }) => {
 };
 
 const getImages = async (query: Record<string, any>) => {
-  const { searchTerm, page, limit, sortBy, sortOrder } = query;
+  const { searchTerm, page, limit, sortBy, sortOrder, fromDate, toDate, type } =
+    query;
 
   if (sortBy)
     validateQueryFields(imageFieldsValidationConfig, "sort_by", sortBy);
@@ -95,6 +102,31 @@ const getImages = async (query: Record<string, any>) => {
     });
   }
 
+  if (type) {
+    validateQueryFields(imageFieldsValidationConfig, "type", type);
+    andConditions.push({
+      type: type,
+    });
+  }
+
+  if (fromDate) {
+    const date = validDateChecker(fromDate, "fromDate");
+    andConditions.push({
+      created_at: {
+        gte: date,
+      },
+    });
+  }
+
+  if (toDate) {
+    const date = validDateChecker(toDate, "toDate");
+    andConditions.push({
+      created_at: {
+        lte: date,
+      },
+    });
+  }
+
   const whereConditions = {
     AND: andConditions,
   };
@@ -106,6 +138,14 @@ const getImages = async (query: Record<string, any>) => {
       take: limitNumber,
       orderBy: {
         [sortWith]: sortSequence,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     }),
     prisma.image.count({ where: whereConditions }),
@@ -126,60 +166,47 @@ const getImage = async (id: string) => {
     where: {
       id,
     },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
   });
 
   return result;
 };
 
-const changeImageName = async (id: string, payload: { name: string }) => {
-  const { name } = payload;
-
-  const image = await prisma.image.findFirst({
-    where: {
-      id,
-    },
-  });
-
-  if (!image) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Image not found to update");
-  }
-
+const updateImage = async (id: string, payload: TUpdateImagePayload) => {
   const result = await prisma.image.update({
     where: {
       id: id,
     },
-    data: {
-      name,
-    },
+    data: payload,
   });
   return result;
 };
 
 const deleteImages = async (payload: TDeleteImagePayload) => {
-  const { cloud_ids } = payload;
-  const cloudinaryResponse = (await fileUploader.deleteToCloudinary(
-    cloud_ids
-  )) as any;
+  const { images_path } = payload;
+  const { data, error } = await supabase.storage
+    .from(config.supabase_bucket_name)
+    .remove(images_path);
 
-  if (!cloudinaryResponse) {
+  if ((error as any)?.status === 400 || data?.length === 0)
     throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      "Failed to delete images"
+      httpStatus.BAD_REQUEST,
+      "No valid image path found to delete"
     );
-  }
 
-  const deletedIds = Object.entries(cloudinaryResponse.deleted)
-    .filter(([key, value]) => value === "deleted")
-    .map(([key, value]) => key);
-
-  if (deletedIds.length === 0) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No valid id found to delete");
-  }
+  const deletedImagesBucketId = data?.map((image) => image.id);
 
   const result = await prisma.image.deleteMany({
     where: {
       bucket_id: {
-        in: deletedIds,
+        in: deletedImagesBucketId,
       },
     },
   });
@@ -194,6 +221,6 @@ export const ImageServices = {
   uploadImages,
   getImages,
   getImage,
-  changeImageName,
+  updateImage,
   deleteImages,
 };

@@ -97,6 +97,21 @@
  *         schema:
  *           type: string
  *         description: The search term for filtering
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: The image type for filtering
+ *       - in: query
+ *         name: fromDate
+ *         schema:
+ *           type: string
+ *         description: From date to filter image
+ *       - in: query
+ *         name: toDate
+ *         schema:
+ *           type: string
+ *         description: To date to filter image
  *     responses:
  *       200:
  *         description: If retrieving all images is successful
@@ -136,19 +151,43 @@
  *                          type: string
  *                          description: The ID of the image
  *                          example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                        user_id:
+ *                          type: string
+ *                          description: The ID of the uploader
+ *                          example: 656c6ccf-199c-454c-937b-f41c148f673b
  *                        name:
  *                          type: string
  *                          description: The name of the image
  *                          example: image1
+ *                        alt_text:
+ *                          type: string
+ *                          description: The name of the image
+ *                          example: image1
+ *                        type:
+ *                          type: string
+ *                          description: The name of the image
+ *                          example: image/jpeg
+ *                        size:
+ *                          type: number
+ *                          description: Size of the image in byte
+ *                          example: 59676
+ *                        width:
+ *                          type: number
+ *                          description: The width of the image in pixels
+ *                          example: 1200
+ *                        height:
+ *                          type: number
+ *                          description: The height of the image in pixels
+ *                          example: 800
  *                        path:
  *                          type: string
  *                          format: uri
  *                          description: The path of the image
  *                          example: https://example.com/nue4ryu9jt4vcmq4g976.jpg
- *                        cloud_id:
+ *                        bucket_id:
  *                          type: string
  *                          description: The cloud ID of the image
- *                          example: nue4ryu9jt4vcmq4g976
+ *                          example: ce072252-3b95-4579-8566-d72e8316cc58
  *                        created_at:
  *                          type: string
  *                          format: date-time
@@ -159,6 +198,17 @@
  *                          format: date-time
  *                          description: The last updated date of the image
  *                          example: 2023-01-01T00:00:00.000Z
+ *                        user:
+ *                          type: object
+ *                          properties:
+ *                            id:
+ *                              type: string
+ *                              description: The ID of the uploader
+ *                              example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                            name:
+ *                              type: string
+ *                              description: The name of the uploader
+ *                              example: John Doe
  *       401:
  *         description: If the user is not authenticated for the request. Only admin get all images
  */
@@ -202,29 +252,64 @@
  *                          type: string
  *                          description: The ID of the image
  *                          example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                        user_id:
+ *                          type: string
+ *                          description: The ID of the uploader
+ *                          example: 656c6ccf-199c-454c-937b-f41c148f673b
  *                        name:
  *                          type: string
  *                          description: The name of the image
  *                          example: image1
+ *                        alt_text:
+ *                          type: string
+ *                          description: The name of the image
+ *                          example: image1
+ *                        type:
+ *                          type: string
+ *                          description: The name of the image
+ *                          example: image/jpeg
+ *                        size:
+ *                          type: number
+ *                          description: Size of the image in byte
+ *                          example: 59676
+ *                        width:
+ *                          type: number
+ *                          description: The width of the image in pixels
+ *                          example: 1200
+ *                        height:
+ *                          type: number
+ *                          description: The height of the image in pixels
+ *                          example: 800
  *                        path:
  *                          type: string
  *                          format: uri
  *                          description: The path of the image
  *                          example: https://example.com/nue4ryu9jt4vcmq4g976.jpg
- *                        cloud_id:
+ *                        bucket_id:
  *                          type: string
  *                          description: The cloud ID of the image
- *                          example: vgkpwefhuup9xzrwxnej
+ *                          example: ce072252-3b95-4579-8566-d72e8316cc58
  *                        created_at:
  *                          type: string
  *                          format: date-time
- *                          description: The date and time when the image was created
- *                          example: 2023-08-12T12:00:00.000Z
+ *                          description: The uploaded date of the image
+ *                          example: 2023-01-01T00:00:00.000Z
  *                        updated_at:
  *                          type: string
  *                          format: date-time
- *                          description: The date and time when the image was last updated
- *                          example: 2023-08-12T12:00:00.000Z
+ *                          description: The last updated date of the image
+ *                          example: 2023-01-01T00:00:00.000Z
+ *                        user:
+ *                          type: object
+ *                          properties:
+ *                            id:
+ *                              type: string
+ *                              description: The ID of the uploader
+ *                              example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                            name:
+ *                              type: string
+ *                              description: The name of the uploader
+ *                              example: John Doe
  *       401:
  *         description: If the user is not authenticated for the request. Only admin get an image details
  *       404:
@@ -234,7 +319,7 @@
 // Update a single image
 /**
  * @swagger
- * /api/v1/image/change-name/{id}:
+ * /api/v1/image/update/{id}:
  *   patch:
  *     summary: Update an uploaded image name by ID
  *     description: Update an uploaded image name by ID
@@ -260,6 +345,10 @@
  *                 type: string
  *                 description: The new name of the image
  *                 example: image1
+ *               alt_text:
+ *                 type: string
+ *                 description: Alter text of the image
+ *                 example: image1
  *     responses:
  *       200:
  *         description: If the image is updated successfully
@@ -280,31 +369,66 @@
  *                      properties:
  *                        id:
  *                          type: string
- *                          description: The ID of the updated image
+ *                          description: The ID of the image
+ *                          example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                        user_id:
+ *                          type: string
+ *                          description: The ID of the uploader
  *                          example: 656c6ccf-199c-454c-937b-f41c148f673b
  *                        name:
  *                          type: string
- *                          description: The updated name of the image
+ *                          description: The name of the image
  *                          example: image1
+ *                        alt_text:
+ *                          type: string
+ *                          description: The name of the image
+ *                          example: image1
+ *                        type:
+ *                          type: string
+ *                          description: The name of the image
+ *                          example: image/jpeg
+ *                        size:
+ *                          type: number
+ *                          description: Size of the image in byte
+ *                          example: 59676
+ *                        width:
+ *                          type: number
+ *                          description: The width of the image in pixels
+ *                          example: 1200
+ *                        height:
+ *                          type: number
+ *                          description: The height of the image in pixels
+ *                          example: 800
  *                        path:
  *                          type: string
  *                          format: uri
  *                          description: The path of the image
  *                          example: https://example.com/nue4ryu9jt4vcmq4g976.jpg
- *                        cloud_id:
+ *                        bucket_id:
  *                          type: string
  *                          description: The cloud ID of the image
- *                          example: vgkpwefhuup9xzrwxnej
+ *                          example: ce072252-3b95-4579-8566-d72e8316cc58
  *                        created_at:
  *                          type: string
  *                          format: date-time
- *                          description: The date and time when the image was created
- *                          example: 2023-08-12T12:00:00.000Z
+ *                          description: The uploaded date of the image
+ *                          example: 2023-01-01T00:00:00.000Z
  *                        updated_at:
  *                          type: string
  *                          format: date-time
- *                          description: The date and time when the image was last updated
- *                          example: 2023-08-12T12:00:00.000Z
+ *                          description: The last updated date of the image
+ *                          example: 2023-01-01T00:00:00.000Z
+ *                        user:
+ *                          type: object
+ *                          properties:
+ *                            id:
+ *                              type: string
+ *                              description: The ID of the uploader
+ *                              example: 656c6ccf-199c-454c-937b-f41c148f673b
+ *                            name:
+ *                              type: string
+ *                              description: The name of the uploader
+ *                              example: John Doe
  *       401:
  *         description: If the user is not authenticated for the request. Only admin can update an image name
  *       404:
@@ -329,7 +453,7 @@
  *           schema:
  *             type: object
  *             properties:
- *               cloud_ids:
+ *               images_path:
  *                 type: array
  *                 items:
  *                   type: string

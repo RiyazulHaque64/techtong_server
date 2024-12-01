@@ -34,8 +34,8 @@ const getImage = catchAsync(async (req, res, next) => {
   });
 });
 
-const changeImageName = catchAsync(async (req, res, next) => {
-  const result = await ImageServices.changeImageName(req.params.id, req.body);
+const updateImage = catchAsync(async (req, res, next) => {
+  const result = await ImageServices.updateImage(req.params.id, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -58,6 +58,6 @@ export const ImageControllers = {
   uploadImages,
   getImages,
   getImage,
-  changeImageName,
+  updateImage,
   deleteImages,
 };

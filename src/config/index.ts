@@ -25,4 +25,5 @@ export default {
   email_app_pass: process.env.EMAIL_APP_PASS,
   supabase_bucket_url: process.env.SUPABASE_BUCKET_URL,
   supabase_bucket_key: process.env.SUPABASE_BUCKET_KEY,
+  supabase_bucket_name: process.env.SUPABASE_BUCKET_NAME,
 };

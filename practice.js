@@ -181,5 +181,12 @@ export function generatePassword(length) {
   return password;
 }
 
-const result = generatePassword(7);
-console.log("generated password: ", result);
+const printSpecificNumber = (numbers) => {
+  const allowedNumbers = [3, 6, 7];
+  for (let i = 0; i < numbers.length; i++) {
+    if (!allowedNumbers.includes(numbers[i])) {
+      continue;
+    }
+    console.log(numbers[i]);
+  }
+};

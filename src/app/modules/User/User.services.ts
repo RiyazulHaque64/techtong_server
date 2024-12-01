@@ -12,8 +12,9 @@ import { fileUploader } from "../../utils/fileUploader";
 import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
 import { TUpdateUserPayload } from "./User.interfaces";
-import { TImage } from "../Image/Image.interfaces";
 import validateQueryFields from "../../utils/validateQueryFields";
+import sharp from "sharp";
+import supabase from "../../shared/supabase";
 
 const getUsers = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, ...remainingQuery } =
@@ -121,16 +122,34 @@ const updateProfile = async (
   console.log("data: ", payload);
 
   if (file) {
-    const image: Record<string, string> = {};
-    const convertedFile = Buffer.from(file.buffer).toString("base64");
-    const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
-    const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
-    image["path"] = cloudinaryResponse?.secure_url as string;
-    image["cloud_id"] = cloudinaryResponse?.public_id as string;
-    image["name"] = file.originalname;
+    const metadata = await sharp(file.buffer).metadata();
+    const { data } = await supabase.storage
+      .from("techtong")
+      .upload(file.originalname, file.buffer, {
+        contentType: file.mimetype,
+      });
+
+    if (!data?.id) {
+      throw new ApiError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to upload profile picture"
+      );
+    }
+
+    const image = {
+      user_id: user?.id,
+      name: file.originalname,
+      alt_text: file.originalname,
+      type: file.mimetype,
+      size: file.size,
+      width: metadata.width || 0,
+      height: metadata.height || 0,
+      path: data.path,
+      bucket_id: data.id,
+    };
 
     profilePic = await prisma.image.create({
-      data: image as TImage,
+      data: image,
     });
 
     const userInfo = await prisma.user.findUniqueOrThrow({
@@ -146,7 +165,7 @@ const updateProfile = async (
         },
       });
       if (profilePic) {
-        await fileUploader.deleteToCloudinary([profilePic.cloud_id]);
+        await fileUploader.deleteToCloudinary([profilePic.bucket_id]);
         await prisma.image.delete({
           where: {
             id: profilePic.id,

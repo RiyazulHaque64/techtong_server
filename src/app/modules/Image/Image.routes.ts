@@ -29,10 +29,10 @@ router.delete(
 );
 
 router.patch(
-  "/change-name/:id",
+  "/update/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  validateRequest(ImageValidations.changeImageNameValidationSchema),
-  ImageControllers.changeImageName
+  validateRequest(ImageValidations.updateImageValidationSchema),
+  ImageControllers.updateImage
 );
 
 router.get(

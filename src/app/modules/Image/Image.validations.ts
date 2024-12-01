@@ -3,31 +3,33 @@ import { z } from "zod";
 const deleteImagesValidationSchema = z.object({
   body: z
     .object({
-      cloud_ids: z.array(
+      images_path: z.array(
         z
-          .string({ invalid_type_error: "Cloud id must be a text" })
-          .length(20, { message: "Invalid cloud id found" }),
-        {
-          invalid_type_error: "cloud_ids must be an array",
-          required_error: "cloud_ids is required",
-        }
+          .string({ invalid_type_error: "Image path must be a text" })
+          .min(1, "Image path should not be empty string")
       ),
     })
     .strict(),
 });
 
-const changeImageNameValidationSchema = z.object({
+const updateImageValidationSchema = z.object({
   body: z
     .object({
-      name: z.string({
-        required_error: "Updated name is required",
-        invalid_type_error: "Updated name must be a text",
-      }),
+      name: z
+        .string({
+          invalid_type_error: "Updated name must be a text",
+        })
+        .optional(),
+      alt_text: z
+        .string({
+          invalid_type_error: "Updated name must be a text",
+        })
+        .optional(),
     })
     .strict(),
 });
 
 export const ImageValidations = {
   deleteImagesValidationSchema,
-  changeImageNameValidationSchema,
+  updateImageValidationSchema,
 };

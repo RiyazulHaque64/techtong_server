@@ -1,5 +1,10 @@
-export type TImage = { name: string; path: string; cloud_id: string };
+export type TImage = { name: string; path: string; bucket_id: string };
 
 export type TDeleteImagePayload = {
-  cloud_ids: string[];
+  images_path: string[];
+};
+
+export type TUpdateImagePayload = {
+  name?: string;
+  alt_text?: string;
 };
