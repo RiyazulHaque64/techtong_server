@@ -14,9 +14,12 @@ import {
 import path from "path";
 import validateQueryFields from "../../utils/validateQueryFields";
 import supabase from "../../shared/supabase";
+import sharp from "sharp";
+import { TAuthUser } from "../../interfaces/common";
 
-const uploadImages = async (req: Request) => {
+const uploadImages = async (req: Request & { user?: TAuthUser }) => {
   const files = req.files as TFiles;
+  const user = req.user;
 
   if (!files?.images?.length) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No images found");
@@ -27,40 +30,39 @@ const uploadImages = async (req: Request) => {
   if (files?.images) {
     for (let i = 0; i < files.images.length; i++) {
       const file = files.images[i];
-      const fileName = `${Date.now()}_${file.originalname}`;
+      const metadata = await sharp(file.buffer).metadata();
 
-      const { data, error } = await supabase.storage
+      const { data } = await supabase.storage
         .from("techtong")
-        .upload(fileName, file.buffer, {
+        .upload(file.originalname, file.buffer, {
           contentType: file.mimetype,
         });
 
-      console.log({ data, error });
-
-      // const convertedFile = Buffer.from(file.buffer).toString("base64");
-      // const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
-      // const cloudinaryResponse = (await fileUploader.uploadToCloudinary(
-      //   dataURI
-      // )) as TCloudinaryResponse;
-      // const fileName = path.parse(file.originalname).name;
-      // images.push({
-      //   name: fileName,
-      //   path: cloudinaryResponse?.secure_url,
-      //   cloud_id: cloudinaryResponse?.public_id,
-      // });
+      if (data?.id) {
+        images.push({
+          user_id: user?.id,
+          name: file.originalname,
+          alt_text: file.originalname,
+          type: file.mimetype,
+          size: file.size,
+          width: metadata.width || 0,
+          height: metadata.height || 0,
+          path: data.path,
+          bucket_id: data.id,
+        });
+      }
     }
   }
 
-  // const result = await prisma.image.createMany({
-  //   data: images,
-  //   skipDuplicates: true,
-  // });
+  const result = await prisma.image.createMany({
+    data: images,
+    skipDuplicates: true,
+  });
 
-  // return {
-  //   uploaded_count: result.count,
-  //   message: `${result.count} image has been uploaded`,
-  // };
-  return null;
+  return {
+    uploaded_count: result.count,
+    message: `${result.count} image has been uploaded`,
+  };
 };
 
 const getImages = async (query: Record<string, any>) => {
@@ -176,7 +178,7 @@ const deleteImages = async (payload: TDeleteImagePayload) => {
 
   const result = await prisma.image.deleteMany({
     where: {
-      cloud_id: {
+      bucket_id: {
         in: deletedIds,
       },
     },

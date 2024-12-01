@@ -26,6 +26,7 @@ model User {
   reviews             Review[]
 
   address Address[]
+  Image   Image[]
 
   @@map("users")
 }
@@ -237,11 +238,19 @@ model Card {
 
 model Image {
   id         String   @id @default(uuid())
+  user_id    String?
   name       String
+  alt_text   String
+  type       String
+  size       Int
+  width      Int
+  height     Int
   path       String
-  cloud_id   String
+  bucket_id  String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  user User? @relation(fields: [user_id], references: [id])
 
   @@map("images")
 }
