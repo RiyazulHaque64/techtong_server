@@ -117,6 +117,9 @@ const updateProfile = async (
 ) => {
   let profilePic;
 
+  console.log("file: ", file);
+  console.log("data: ", payload);
+
   if (file) {
     const image: Record<string, string> = {};
     const convertedFile = Buffer.from(file.buffer).toString("base64");
@@ -163,7 +166,12 @@ const updateProfile = async (
     },
     data: payload,
     select: {
-      ...userSelectedFields,
+      id: true,
+      name: true,
+      email: true,
+      contact_number: true,
+      role: true,
+      profile_pic: true,
     },
   });
 

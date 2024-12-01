@@ -51,7 +51,12 @@ const getAccessToken = catchAsync(async (req, res, next) => {
 
 const resetPassword = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
-    const result = await AuthServices.resetPassword(req?.user, req.body);
+    const { refreshToken, ...result } = await AuthServices.resetPassword(
+      req?.user,
+      req.body
+    );
+    const maxAge = 60 * 24 * 60 * 60 * 1000;
+    res.cookie("refresh_token", refreshToken, { maxAge, httpOnly: true });
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,

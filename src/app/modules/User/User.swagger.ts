@@ -358,26 +358,12 @@
  *                         type: string
  *                         description: The role of the user
  *                         example: USER | RETAILER | ADMIN
- *                       status:
- *                         type: string
- *                         description: The status of the user
- *                         example: ACTIVE | INACTIVE | BLOCKED
  *                       profile_pic:
  *                         type: string
  *                         format: uri
  *                         nullable: true
  *                         description: The profile picture of the user
  *                         example: https://example.com/profile.jpg | null
- *                       created_at:
- *                         type: string
- *                         format: date-time
- *                         description: The creation date of the user
- *                         example: 2023-01-01T00:00:00.000Z
- *                       updated_at:
- *                         type: string
- *                         format: date-time
- *                         description: The last update date of the user
- *                         example: 2023-01-01T00:00:00.000Z
  *       401:
  *         description: If the user is not authenticated for the request.
  */

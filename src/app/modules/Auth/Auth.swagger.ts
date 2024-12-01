@@ -323,26 +323,17 @@
  *                        type: string
  *                        description: The role of the user
  *                        example: USER
- *                      status:
- *                        type: string
- *                        description: The status of the user
- *                        example: ACTIVE
  *                      profile_pic:
  *                        type: string
  *                        format: uri
  *                        nullable: true
  *                        description: The profile picture of the user
  *                        example: https://example.com/profile.jpg | null
- *                      created_at:
+ *                      access_token:
  *                        type: string
- *                        format: date-time
- *                        description: The date and time when the user was created
- *                        example: "2023-08-12T12:00:00.000Z"
- *                      updated_at:
- *                        type: string
- *                        format: date-time
- *                        description: The date and time when the user was last updated
- *                        example: "2023-08-12T12:00:00.000Z"
+ *                        description: The access token used for authentication
+ *                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIzMzUxMzBkLWViMzctNDViZi1iNTIyLTg5YzUyZmZlMjUyMyIsImNvbnRhY3RfbnVtYm.vFlqGmeUJHS5hjAKqf88EhGcDE8hWktj5MbpLe6axnE
+ *
  *       400:
  *         description: If the request is invalid or missing required fields
  *       401:

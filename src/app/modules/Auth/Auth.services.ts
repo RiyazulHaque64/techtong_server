@@ -223,6 +223,8 @@ const resetPassword = async (
   const userInfo = await prisma.user.findUniqueOrThrow({
     where: {
       id: user?.id,
+      status: UserStatus.ACTIVE,
+      is_deleted: false,
     },
   });
 
@@ -253,7 +255,42 @@ const resetPassword = async (
     },
   });
 
-  return result;
+  if (!result) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Failed to update password"
+    );
+  }
+
+  const jwtPayload = {
+    id: result.id,
+    contact_number: result.contact_number,
+    email: result.email,
+    role: result.role,
+  };
+
+  const accessToken = generateToken(
+    jwtPayload,
+    config.jwt_access_secret,
+    config.jwt_access_expiresin
+  );
+
+  const refreshToken = generateToken(
+    jwtPayload,
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expiresin
+  );
+
+  return {
+    id: result.id,
+    name: result.name,
+    email: result.email,
+    contact_number: result.contact_number,
+    role: result.role,
+    profile_pic: result.profile_pic,
+    access_token: accessToken,
+    refreshToken,
+  };
 };
 
 const forgotPassword = async (email_or_contact_number: string) => {
