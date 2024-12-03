@@ -33,7 +33,6 @@ const uploadImages = async (req: Request & { user?: TAuthUser }) => {
   if (files?.images) {
     for (let i = 0; i < files.images.length; i++) {
       const file = files.images[i];
-      console.log(file);
       if (!allowedImageType.includes(file.mimetype)) {
         continue;
       }
@@ -48,7 +47,7 @@ const uploadImages = async (req: Request & { user?: TAuthUser }) => {
         images.push({
           user_id: user?.id,
           name: file.originalname,
-          alt_text: file.originalname,
+          alt_text: file.originalname.replace(/\.[^/.]+$/, ""),
           type: file.mimetype,
           size: file.size,
           width: metadata.width || 0,

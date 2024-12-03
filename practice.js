@@ -190,3 +190,13 @@ const printSpecificNumber = (numbers) => {
     console.log(numbers[i]);
   }
 };
+
+const tagTypes = {
+  image: "image",
+  user: "user",
+  brand: "brand",
+};
+
+const tags = Object.values(tagTypes);
+
+const str = "image/jpg";

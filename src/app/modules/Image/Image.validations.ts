@@ -19,6 +19,7 @@ const updateImageValidationSchema = z.object({
         .string({
           invalid_type_error: "Updated name must be a text",
         })
+        .min(1, "Cann't save empty name")
         .optional(),
       alt_text: z
         .string({

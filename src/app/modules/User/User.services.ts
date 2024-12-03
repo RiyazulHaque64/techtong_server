@@ -1,4 +1,4 @@
-import { Prisma, UserRole, UserStatus } from "@prisma/client";
+import { Prisma, UploadedFrom, UserRole, UserStatus } from "@prisma/client";
 import pagination from "../../utils/pagination";
 import {
   userFieldsValidationConfig,
@@ -118,14 +118,13 @@ const updateProfile = async (
 ) => {
   let profilePic;
 
-  console.log("file: ", file);
-  console.log("data: ", payload);
-
   if (file) {
     const metadata = await sharp(file.buffer).metadata();
+    const fileName = `${Date.now()}_${file.originalname}`;
+    console.log(fileName);
     const { data } = await supabase.storage
       .from("techtong")
-      .upload(file.originalname, file.buffer, {
+      .upload(fileName, file.buffer, {
         contentType: file.mimetype,
       });
 
@@ -137,6 +136,7 @@ const updateProfile = async (
     }
 
     const image = {
+      uploaded_from: UploadedFrom.USER,
       user_id: user?.id,
       name: file.originalname,
       alt_text: file.originalname,
