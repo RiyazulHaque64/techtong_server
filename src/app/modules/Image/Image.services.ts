@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import ApiError from "../../error/ApiError";
 import { TCloudinaryResponse, TFiles } from "../../interfaces/file";
-import { Prisma } from "@prisma/client";
+import { Prisma, UploadedFrom } from "@prisma/client";
 import { fileUploader } from "../../utils/fileUploader";
 import prisma from "../../shared/prisma";
 import { Request } from "express";
@@ -11,6 +11,7 @@ import {
   allowedImageType,
   imageFieldsValidationConfig,
   imageSearchableFields,
+  prepareTypes,
 } from "./Image.constant";
 import path from "path";
 import validateQueryFields from "../../utils/validateQueryFields";
@@ -86,7 +87,9 @@ const getImages = async (query: Record<string, any>) => {
     sortOrder,
   });
 
-  const andConditions: Prisma.ImageWhereInput[] = [];
+  const andConditions: Prisma.ImageWhereInput[] = [
+    { uploaded_from: UploadedFrom.ADMIN },
+  ];
 
   if (searchTerm) {
     andConditions.push({
@@ -102,9 +105,11 @@ const getImages = async (query: Record<string, any>) => {
   }
 
   if (type) {
-    validateQueryFields(imageFieldsValidationConfig, "type", type);
+    const types = prepareTypes(type);
     andConditions.push({
-      type: type,
+      type: {
+        in: types,
+      },
     });
   }
 

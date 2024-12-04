@@ -199,4 +199,7 @@ const tagTypes = {
 
 const tags = Object.values(tagTypes);
 
-const str = "image/jpg";
+const str = "jpg,png";
+
+const strs = str.split(",").map((str) => `image/${str}`);
+console.log(strs);

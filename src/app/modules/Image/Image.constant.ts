@@ -17,3 +17,16 @@ export const imageFieldsValidationConfig: Record<string, any> = {
   sort_order: sortOrderType,
   type: allowedImageType,
 };
+
+export const prepareTypes = (types: string) => {
+  return types.split(",").map((type) => {
+    switch (type) {
+      case "svg":
+        return "image/svg+xml";
+      case "ico":
+        return "image/vnd.microsoft.icon";
+      default:
+        return `image/${type}`;
+    }
+  });
+};
