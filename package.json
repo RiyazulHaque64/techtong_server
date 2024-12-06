@@ -1,7 +1,8 @@
 {
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --watch ./src/app ./src/server.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "build": "tsc"
   },
   "dependencies": {
     "@prisma/client": "^5.17.0",
