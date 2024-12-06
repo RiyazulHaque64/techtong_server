@@ -25,7 +25,7 @@ const addToCart = async (
     },
   });
 
-  let price;
+  let price: number;
   switch (user.role) {
     case UserRole.SUPER_ADMIN:
       price = product.retailer_price || product.discount_price || product.price;

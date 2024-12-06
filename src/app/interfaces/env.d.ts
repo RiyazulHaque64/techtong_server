@@ -9,9 +9,9 @@ declare namespace NodeJS {
     JWT_REFRESH_SECRET: string;
     JWT_REFRESH_EXPIRESIN: string;
     SUPER_ADMIN_NAME: string;
-    SUPER_ADMIN_USER_NAME: string;
     SUPER_ADMIN_PASSWORD: string;
     SUPER_ADMIN_EMAIL: string;
+    SUPER_ADMIN_CONTACT_NUMBER: string;
     CLOUD_NAME: string;
     CLOUDINARY_API_KEY: string;
     CLOUDINARY_API_SECRET: string;

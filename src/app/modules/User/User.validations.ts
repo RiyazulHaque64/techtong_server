@@ -1,6 +1,5 @@
-import { UserRole } from "@prisma/client";
 import { z } from "zod";
-import { userRole, userStatus } from "./User.constants";
+import { userStatus } from "./User.constants";
 
 const updateProfileValidationSchema = z.object({
   body: z

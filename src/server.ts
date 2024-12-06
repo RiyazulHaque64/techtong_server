@@ -4,6 +4,7 @@ import config from "./config";
 import cron from "node-cron";
 import clearOldOTPs from "./app/utils/clearOldOTPs";
 import { CouponServices } from "./app/modules/Coupon/Coupon.services";
+import { seedSuperAdmin } from "./app/db";
 
 const port = config.port || 9000;
 
@@ -11,7 +12,7 @@ let server: Server;
 
 async function main() {
   try {
-    // await seedSuperAdmin();
+    await seedSuperAdmin();
     server = app.listen(port, () => {
       console.log(`Techtong server is running on port ${port}`);
     });

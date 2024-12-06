@@ -5,8 +5,8 @@ import prisma from "../shared/prisma";
 
 const superAdmin = {
   name: config.super_admin_name,
-  userName: config.super_admin_user_name,
   email: config.super_admin_email,
+  contact_number: config.super_admin_contact_number,
   role: UserRole.SUPER_ADMIN,
 };
 
