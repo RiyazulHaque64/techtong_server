@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OrderRoutes = void 0;
+const express_1 = require("express");
+const Order_controllers_1 = require("./Order.controllers");
+const auth_1 = __importDefault(require("../../middlewares/auth"));
+const client_1 = require("@prisma/client");
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
+const Order_validations_1 = require("./Order.validations");
+const router = (0, express_1.Router)();
+router.get("/", (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN), Order_controllers_1.OrderControllers.getOrders);
+router.get("/my-order", (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN, client_1.UserRole.RETAILER, client_1.UserRole.USER), Order_controllers_1.OrderControllers.myOrder);
+router.post("/create-order", (0, validateRequest_1.default)(Order_validations_1.OrderValidations.createOrderForGuestUserValidationSchema), Order_controllers_1.OrderControllers.createOrderForGuestUser);
+router.post("/create-order-for-user", (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN, client_1.UserRole.RETAILER, client_1.UserRole.USER), (0, validateRequest_1.default)(Order_validations_1.OrderValidations.createOrderForRegisteredUserValidationSchema), Order_controllers_1.OrderControllers.createOrderForRegisteredUser);
+router.patch("/admin/:id", (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN), (0, validateRequest_1.default)(Order_validations_1.OrderValidations.updateOrderByAdminValidationSchema), Order_controllers_1.OrderControllers.updateOrderByAdmin);
+router.patch("/:id", (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN, client_1.UserRole.RETAILER, client_1.UserRole.USER), (0, validateRequest_1.default)(Order_validations_1.OrderValidations.updateOrderByCustomerValidationSchema), Order_controllers_1.OrderControllers.updateOrderByCustomer);
+exports.OrderRoutes = router;
