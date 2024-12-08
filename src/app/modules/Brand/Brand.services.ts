@@ -66,6 +66,13 @@ const getBrands = async (query: Record<string, any>) => {
       orderBy: {
         [sortWith]: sortSequence,
       },
+      include: {
+        _count: {
+          select: {
+            products: true
+          }
+        }
+      }
     }),
     await prisma.brand.count({ where: whereConditions }),
   ]);

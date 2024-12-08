@@ -199,6 +199,13 @@
  *                          format: date-time
  *                          description: The date and time when the brand was last updated
  *                          example: 2023-08-12T12:00:00.000Z
+ *                        _count:
+ *                          type: object
+ *                          properties:
+ *                             products:
+ *                               type: number
+ *                               description: Product counts depend on brand
+ *                               example: 10
  */
 
 // Get a single brand
