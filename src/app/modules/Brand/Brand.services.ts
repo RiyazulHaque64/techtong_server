@@ -69,10 +69,10 @@ const getBrands = async (query: Record<string, any>) => {
       include: {
         _count: {
           select: {
-            products: true
-          }
-        }
-      }
+            products: true,
+          },
+        },
+      },
     }),
     await prisma.brand.count({ where: whereConditions }),
   ]);
@@ -109,10 +109,12 @@ const updateBrand = async (id: string, payload: TBrandPayload) => {
   return result;
 };
 
-const deleteBrand = async (id: string) => {
-  await prisma.brand.delete({
+const deleteBrand = async ({ ids }: { ids: string[] }) => {
+  await prisma.brand.deleteMany({
     where: {
-      id,
+      id: {
+        in: ids,
+      },
     },
   });
   return null;

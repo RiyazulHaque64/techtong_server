@@ -22,8 +22,9 @@ router.patch(
   BrandControllers.updateBrand
 );
 router.delete(
-  "/:id",
+  "/delete-brand",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(BrandValidations.deleteBrandsValidationSchema),
   BrandControllers.deleteBrand
 );
 

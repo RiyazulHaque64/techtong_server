@@ -45,7 +45,7 @@ const updateBrand = catchAsync(async (req, res, next) => {
 });
 
 const deleteBrand = catchAsync(async (req, res, next) => {
-  const result = await BrandServices.deleteBrand(req.params.id);
+  const result = await BrandServices.deleteBrand(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

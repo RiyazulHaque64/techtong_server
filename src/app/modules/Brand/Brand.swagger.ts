@@ -368,23 +368,29 @@
  *                        example: 2023-08-12T12:00:00.000Z
  */
 
-// Delete a single brand
+// Delete brands
 /**
  * @swagger
- * /api/v1/brand/{id}:
+ * /api/v1/brand/delete-brand:
  *   delete:
- *     summary: Delete a single brand by ID
- *     description: Deletes a single brand by its ID.
+ *     summary: Delete brands by IDs
+ *     description: Deletes brands by its IDs.
  *     tags: [Brand]
  *     security:
  *       - AdminAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The unique ID of the user
+ *     requestBody:
+ *       description: You can delete multiple brands by IDs
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: [656c6ccf-199c-454c-937b-f41c148f673b]
  *     responses:
  *       200:
  *         description: No data is returned
