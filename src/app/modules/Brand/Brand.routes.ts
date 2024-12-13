@@ -14,18 +14,18 @@ router.post(
   validateRequest(BrandValidations.addBrandValidationSchema),
   BrandControllers.addBrand
 );
+router.delete(
+  "/delete-brand",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(BrandValidations.deleteBrandsValidationSchema),
+  BrandControllers.deleteBrand
+);
 router.get("/:id", BrandControllers.getBrand);
 router.patch(
   "/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   validateRequest(BrandValidations.updateBrandValidationSchema),
   BrandControllers.updateBrand
-);
-router.delete(
-  "/delete-brand",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  validateRequest(BrandValidations.deleteBrandsValidationSchema),
-  BrandControllers.deleteBrand
 );
 
 export const BrandRoutes = router;

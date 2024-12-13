@@ -242,20 +242,13 @@
  *                              type: string
  *                              description: The description of the parent category
  *                              example: The category is specified for the speaker
- *                            parent_id:
- *                              type: string
- *                              description: The parent category id of the parent category
- *                              example: 656c6ccf-199c-454c-937b-f41c148f673b
- *                            created_at:
- *                              type: string
- *                              format: date-time
- *                              description: The date and time when the parent category was created
- *                              example: 2023-08-12T12:00:00.000Z
- *                            updated_at:
- *                              type: string
- *                              format: date-time
- *                              description: The date and time when the parent category was last updated
- *                              example: 2023-08-12T12:00:00.000Z
+ *                        _count:
+ *                          type: object
+ *                          properties:
+ *                            products:
+ *                              type: number
+ *                              description: The number of products associated with the category
+ *                              example: 10
  */
 
 // Get a single category
@@ -514,20 +507,28 @@
 // Delete a category
 /**
  * @swagger
- * /api/v1/category/{id}:
+ * /api/v1/category/delete-category:
  *   delete:
- *     summary: Delete a single category by ID
- *     description: Delete a single category
+ *     summary: Delete categories by IDs
+ *     description: Delete categories by its IDs
  *     tags: [Category]
  *     security:
  *       - AdminAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the category to delete
- *         schema:
- *           type: string
+ *     requestBody:
+ *       description: You can delete multiple categories by IDs
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ids
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: [656c6ccf-199c-454c-937b-f41c148f673b]
  *     responses:
  *       201:
  *         description: If the category is deleted successfully

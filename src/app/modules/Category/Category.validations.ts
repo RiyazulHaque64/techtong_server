@@ -21,8 +21,7 @@ const addCategoryValidationSchema = z.object({
         )
         .optional(),
       icon: z
-        .string({ invalid_type_error: "Category icon must be an URL" })
-        .url("Category icon must be a valid URL")
+        .string({ invalid_type_error: "Category icon must be a path" })
         .optional(),
     })
     .strict(),
@@ -49,9 +48,27 @@ const updateCategoryValidationSchema = z.object({
         )
         .optional(),
       icon: z
-        .string({ invalid_type_error: "Category icon must be an URL" })
-        .url("Category icon must be a valid URL")
+        .string({ invalid_type_error: "Category icon must be a path" })
         .optional(),
+    })
+    .strict(),
+});
+
+const deleteCategoriesValidationSchema = z.object({
+  body: z
+    .object({
+      ids: z
+        .array(
+          z
+            .string({
+              invalid_type_error: "ID must be a text",
+            })
+            .regex(
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+              "Invalid ID"
+            )
+        )
+        .min(1, "At least one ID is required"),
     })
     .strict(),
 });
@@ -59,4 +76,5 @@ const updateCategoryValidationSchema = z.object({
 export const CategoryValidations = {
   addCategoryValidationSchema,
   updateCategoryValidationSchema,
+  deleteCategoriesValidationSchema,
 };

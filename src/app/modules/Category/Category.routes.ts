@@ -14,6 +14,11 @@ router.post(
   validateRequest(CategoryValidations.addCategoryValidationSchema),
   CategoryControllers.addCategory
 );
+router.delete(
+  "/delete-category",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  CategoryControllers.deleteCategory
+);
 router.patch(
   "/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
@@ -21,10 +26,5 @@ router.patch(
   CategoryControllers.updateCategory
 );
 router.get("/:id", CategoryControllers.getCategory);
-router.delete(
-  "/:id",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  CategoryControllers.deleteCategory
-);
 
 export const CategoryRoutes = router;

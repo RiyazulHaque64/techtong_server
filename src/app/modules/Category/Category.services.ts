@@ -94,7 +94,20 @@ const getCategories = async (query: Record<string, any>) => {
         [sortWith]: sortSequence,
       },
       include: {
-        parent: true,
+        parent: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            icon: true,
+            description: true,
+          },
+        },
+        _count: {
+          select: {
+            products: true,
+          },
+        },
       },
     }),
     prisma.category.count({ where: whereConditions }),
@@ -148,10 +161,12 @@ const updateCategory = async (id: string, payload: TCategoryPayload) => {
   return result;
 };
 
-const deleteCategory = async (id: string) => {
-  await prisma.category.delete({
+const deleteCategory = async ({ ids }: { ids: string[] }) => {
+  await prisma.category.deleteMany({
     where: {
-      id,
+      id: {
+        in: ids,
+      },
     },
   });
   return null;
