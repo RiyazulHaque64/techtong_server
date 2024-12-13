@@ -30,8 +30,9 @@ router.get(
   AttributeControllers.getAttribute
 );
 router.delete(
-  "/:id",
+  "/delete-attribute",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(AttributeValidations.deleteAttributesValidationSchema),
   AttributeControllers.deleteAttribute
 );
 

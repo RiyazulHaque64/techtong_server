@@ -76,6 +76,16 @@
  *                        type: array
  *                        description: The values of the attribute
  *                        example: ["wireless", "bluetooth"]
+ *                      createdAt:
+ *                        type: string
+ *                        format: date-time
+ *                        description: The date and time when the attribute was created
+ *                        example: 2023-08-12T12:00:00.000Z
+ *                      updatedAt:
+ *                        type: string
+ *                        format: date-time
+ *                        description: The date and time when the attribute was last updated
+ *                        example: 2023-08-12T12:00:00.000Z
  *                      category:
  *                        type: object
  *                        description: The category of the attribute if the category id is provided
@@ -88,34 +98,6 @@
  *                            type: string
  *                            description: The title of the category
  *                            example: speaker
- *                          slug:
- *                            type: string
- *                            description: The slug of the category
- *                            example: speaker
- *                          icon:
- *                            type: string
- *                            format: uri
- *                            nullable: true
- *                            description: The icon of the category if available
- *                            example: https://example.com/icon.png
- *                          description:
- *                            type: string
- *                            description: The description of the category
- *                            example: The category is specified for the speaker
- *                          parent_id:
- *                            type: string
- *                            description: The parent id of the category
- *                            example: 656c6ccf-199c-454c-937b-f41c148f673b
- *                          created_at:
- *                            type: string
- *                            format: date-time
- *                            description: The date and time when the attribute was created
- *                            example: 2023-08-12T12:00:00.000Z
- *                          updated_at:
- *                            type: string
- *                            format: date-time
- *                            description: The date and time when the attribute was last updated
- *                            example: 2023-08-12T12:00:00.000Z
  *       401:
  *         description: If the user is not authenticated for the request. Only admin can add a attribute
  *       400:
@@ -218,6 +200,16 @@
  *                          type: array
  *                          description: The values of the attribute
  *                          example: ["wireless", "bluetooth"]
+ *                        createdAt:
+ *                          type: string
+ *                          format: date-time
+ *                          description: The date and time when the attribute was created
+ *                          example: 2023-08-12T12:00:00.000Z
+ *                        updatedAt:
+ *                          type: string
+ *                          format: date-time
+ *                          description: The date and time when the attribute was last updated
+ *                          example: 2023-08-12T12:00:00.000Z
  *                        category:
  *                          type: object
  *                          description: The category of the attribute if the category id is provided
@@ -230,34 +222,6 @@
  *                              type: string
  *                              description: The title of the category
  *                              example: speaker
- *                            slug:
- *                              type: string
- *                              description: The slug of the category
- *                              example: speaker
- *                            icon:
- *                              type: string
- *                              format: uri
- *                              nullable: true
- *                              description: The icon of the category if available
- *                              example: https://example.com/icon.png
- *                            description:
- *                              type: string
- *                              description: The description of the category
- *                              example: The category is specified for the speaker
- *                            parent_id:
- *                              type: string
- *                              description: The parent id of the category
- *                              example: 656c6ccf-199c-454c-937b-f41c148f673b
- *                            created_at:
- *                              type: string
- *                              format: date-time
- *                              description: The date and time when the attribute was created
- *                              example: 2023-08-12T12:00:00.000Z
- *                            updated_at:
- *                              type: string
- *                              format: date-time
- *                              description: The date and time when the attribute was last updated
- *                              example: 2023-08-12T12:00:00.000Z
  *       401:
  *         description: If the user is not authenticated for the request. Only admin can add a attribute
  */
@@ -317,6 +281,16 @@
  *                          type: array
  *                          description: The values of the attribute
  *                          example: ["wireless", "bluetooth"]
+ *                        createdAt:
+ *                          type: string
+ *                          format: date-time
+ *                          description: The date and time when the attribute was created
+ *                          example: 2023-08-12T12:00:00.000Z
+ *                        updatedAt:
+ *                          type: string
+ *                          format: date-time
+ *                          description: The date and time when the attribute was last updated
+ *                          example: 2023-08-12T12:00:00.000Z
  *                        category:
  *                          type: object
  *                          description: The category of the attribute if the category id is provided
@@ -439,6 +413,16 @@
  *                        type: array
  *                        description: The values of the attribute
  *                        example: ["wireless", "bluetooth"]
+ *                      createdAt:
+ *                        type: string
+ *                        format: date-time
+ *                        description: The date and time when the attribute was created
+ *                        example: 2023-08-12T12:00:00.000Z
+ *                      updatedAt:
+ *                        type: string
+ *                        format: date-time
+ *                        description: The date and time when the attribute was last updated
+ *                        example: 2023-08-12T12:00:00.000Z
  *                      category:
  *                        type: object
  *                        description: The category of the attribute if the category id is provided
@@ -485,23 +469,30 @@
  *         description: If the attribute is not found
  */
 
-// Delete a attribute
+// Delete attributes
 /**
  * @swagger
- * /api/v1/attribute/{id}:
+ * /api/v1/attribute/delete-attribute:
  *   delete:
- *     summary: Delete a single attribute by ID
- *     description: Delete a single attribute by its ID.
+ *     summary: Delete attributes by IDs
+ *     description: Delete attributes by its ID.
  *     tags: [Attribute]
  *     security:
  *       - AdminAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the attribute to update
+ *     requestBody:
+ *       description: You can delete multiple attributes by IDs
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: The IDs of the attributes to delete
+ *                 example: [656c6ccf-199c-454c-937b-f41c148f673b]
  *     responses:
  *       200:
  *         description: A JSON object representing the deleted response

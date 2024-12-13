@@ -274,6 +274,8 @@ model Attribute {
   name        String
   slug        String
   value       String[] @default([])
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   category Category? @relation(fields: [category_id], references: [id])
 

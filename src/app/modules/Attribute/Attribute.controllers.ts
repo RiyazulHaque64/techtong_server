@@ -48,7 +48,7 @@ const updateAttribute = catchAsync(async (req, res, next) => {
 });
 
 const deleteAttribute = catchAsync(async (req, res, next) => {
-  const result = await AttributeServices.deleteAttribute(req.params.id);
+  const result = await AttributeServices.deleteAttribute(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

@@ -23,7 +23,12 @@ const addAttribute = async (payload: TAttributePayload) => {
   const result = await prisma.attribute.create({
     data: payload,
     include: {
-      category: true,
+      category: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
     },
   });
 
@@ -91,7 +96,7 @@ const getAttributes = async (query: Record<string, any>) => {
           },
         }
       : {
-          name: sortSequence,
+          created_at: sortSequence,
         };
 
   const [result, total] = await Promise.all([
@@ -101,7 +106,12 @@ const getAttributes = async (query: Record<string, any>) => {
       take: limitNumber,
       orderBy,
       include: {
-        category: true,
+        category: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
       },
     }),
     prisma.attribute.count({ where: whereConditions }),
@@ -152,10 +162,12 @@ const updateAttribute = async (id: string, payload: TAttributePayload) => {
   return result;
 };
 
-const deleteAttribute = async (id: string) => {
-  await prisma.attribute.delete({
+const deleteAttribute = async ({ ids }: { ids: string[] }) => {
+  await prisma.attribute.deleteMany({
     where: {
-      id,
+      id: {
+        in: ids,
+      },
     },
   });
   return null;

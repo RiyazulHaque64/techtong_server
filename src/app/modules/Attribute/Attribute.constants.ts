@@ -1,6 +1,6 @@
 import { sortOrderType } from "../../constants/common";
 
-export const attributeSortableFields = ["name", "category"];
+export const attributeSortableFields = ["name", "category", "created_at"];
 
 export const attributeSearchableFields = ["name"];
 
