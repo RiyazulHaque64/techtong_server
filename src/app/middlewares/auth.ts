@@ -50,7 +50,7 @@ const auth = (...roles: string[]) => {
       req.user = verifiedUser;
 
       next();
-    } catch (error) {
+    } catch (error: any) {
       next(error);
     }
   };

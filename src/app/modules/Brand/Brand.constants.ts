@@ -5,6 +5,7 @@ export const brandSortableFields = [
   "id",
   "name",
   "slug",
+  "products",
   "description",
   "created_at",
   "updated_at",

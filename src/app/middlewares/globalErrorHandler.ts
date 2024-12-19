@@ -33,8 +33,10 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
     errorSources = simplifiedError.errorSources;
+  } else if (error.message === "jwt expired") {
+    statusCode = httpStatus.UNAUTHORIZED;
+    message = "Token has been expired";
   }
-
   res.status(statusCode).json({
     success: false,
     message: message,

@@ -85,14 +85,23 @@ const getCategories = async (query: Record<string, any>) => {
     AND: andConditions,
   };
 
+  const orderBy: Prisma.CategoryOrderByWithRelationInput =
+    sortWith === "products"
+      ? {
+          products: {
+            _count: sortSequence,
+          },
+        }
+      : {
+          [sortWith]: sortSequence,
+        };
+
   const [result, total] = await Promise.all([
     prisma.category.findMany({
       where: whereConditions,
       skip: skip,
       take: limitNumber,
-      orderBy: {
-        [sortWith]: sortSequence,
-      },
+      orderBy,
       include: {
         parent: {
           select: {

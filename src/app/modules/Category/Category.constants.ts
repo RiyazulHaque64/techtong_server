@@ -6,6 +6,7 @@ export const categorySortableFields = [
   "title",
   "slug",
   "description",
+  "products",
   "created_at",
   "updated_at",
 ];

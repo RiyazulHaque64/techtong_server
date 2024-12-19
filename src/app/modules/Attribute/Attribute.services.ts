@@ -10,6 +10,7 @@ import { Prisma } from "@prisma/client";
 import validateQueryFields from "../../utils/validateQueryFields";
 
 const addAttribute = async (payload: TAttributePayload) => {
+  if (payload.value) payload.value = payload.value.map((v) => v.toLowerCase());
   if (payload.value)
     if (payload.category_id) {
       await prisma.category.findUniqueOrThrow({
@@ -70,10 +71,11 @@ const getAttributes = async (query: Record<string, any>) => {
   }
 
   if (category) {
+    const categories = category.split(",");
     andConditions.push({
       category: {
         title: {
-          equals: category,
+          in: categories,
           mode: "insensitive",
         },
       },

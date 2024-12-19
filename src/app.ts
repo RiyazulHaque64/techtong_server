@@ -1,16 +1,18 @@
-import cors from "cors";
 import express, { Application, Request, Response } from "express";
+import cors from "cors";
 import httpStatus from "http-status";
+import cookiePerser from "cookie-parser";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFoundHandler from "./app/middlewares/notFoundHandler";
-import router from "./app/routes";
 import swaggerRoutes from "./app/routes/swagger.routes";
+import router from "./app/routes";
 
 const app: Application = express();
 
-// middleware configuration
+// third party middleware configuration
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookiePerser());
 app.use(
   cors({
     origin: ["https://techtong-client.vercel.app", "http://localhost:8081"],
