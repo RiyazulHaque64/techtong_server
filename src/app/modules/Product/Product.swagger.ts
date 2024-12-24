@@ -39,10 +39,15 @@
  *                 type: string
  *                 description: The ID of the brand associated with the product
  *                 example: 040fec96-2847-41d8-91cf-ae1aedeb45d2
- *               category_id:
- *                 type: string
- *                 description: The ID of the category associated with the product
- *                 example: 040fec96-2847-41d8-91cf-ae1aedeb45d2
+ *               categories:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: The ID of the category
+ *                       example: 040fec96-2847-41d8-91cf-ae1aedeb45d2
  *               tags:
  *                 type: array
  *                 description: The tags associated with the product

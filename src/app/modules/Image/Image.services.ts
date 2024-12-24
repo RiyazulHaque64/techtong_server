@@ -13,7 +13,6 @@ import {
   imageSearchableFields,
   prepareTypes,
 } from "./Image.constant";
-import path from "path";
 import validateQueryFields from "../../utils/validateQueryFields";
 import supabase from "../../shared/supabase";
 import sharp from "sharp";

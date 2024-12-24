@@ -72,14 +72,36 @@ const getAttributes = async (query: Record<string, any>) => {
 
   if (category) {
     const categories = category.split(",");
-    andConditions.push({
-      category: {
-        title: {
-          in: categories,
-          mode: "insensitive",
-        },
-      },
-    });
+    const refineCategories = categories.filter(
+      (c: string) => c !== "uncategorized"
+    );
+
+    andConditions.push(
+      categories.includes("uncategorized")
+        ? {
+            OR: [
+              {
+                category: {
+                  title: {
+                    in: refineCategories,
+                    mode: "insensitive",
+                  },
+                },
+              },
+              {
+                category_id: null,
+              },
+            ],
+          }
+        : {
+            category: {
+              title: {
+                in: refineCategories,
+                mode: "insensitive",
+              },
+            },
+          }
+    );
   }
 
   const whereConditions = {

@@ -3,7 +3,6 @@ export interface IProductPayload {
   model: string;
   slug: string;
   brand_id?: string;
-  category_id?: string;
   tags?: string[];
   code?: string;
   stock?: number;
@@ -18,4 +17,5 @@ export interface IProductPayload {
   key_features?: string[];
   video_url?: string;
   attributes?: [{ slug: string; value: string }];
+  categories: [{ id: string }];
 }

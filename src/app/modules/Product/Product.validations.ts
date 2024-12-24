@@ -24,13 +24,18 @@ const addProductValidationSchema = z.object({
           "Invalid ID"
         )
         .optional(),
-      category_id: z
-        .string({
-          invalid_type_error: "Category id must be a text",
-        })
-        .regex(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-          "Invalid ID"
+      categories: z
+        .array(
+          z.object({
+            id: z
+              .string({
+                invalid_type_error: "Category id must be a text",
+              })
+              .regex(
+                /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+                "Invalid ID"
+              ),
+          })
         )
         .optional(),
 
@@ -64,14 +69,9 @@ const addProductValidationSchema = z.object({
         .optional(),
       thumbnail: z
         .string({ invalid_type_error: "Thumbnail must be an URL" })
-        .url("Thumbnail must be a valid URL")
         .optional(),
       images: z
-        .array(
-          z
-            .string({ invalid_type_error: "Image must be an URL" })
-            .url("Invalid image URL detected")
-        )
+        .array(z.string({ invalid_type_error: "Image must be an URL" }))
         .optional(),
       description: z
         .string({ invalid_type_error: "Description must be a text or HTML" })
@@ -118,17 +118,20 @@ const updateProductValidationSchema = z.object({
           "Invalid ID"
         )
         .optional(),
-      category_id: z
-        .string({
-          required_error: "Category id is required",
-          invalid_type_error: "Category id must be a text",
-        })
-        .regex(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-          "Invalid ID"
+      categories: z
+        .array(
+          z.object({
+            id: z
+              .string({
+                invalid_type_error: "Category id must be a text",
+              })
+              .regex(
+                /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+                "Invalid ID"
+              ),
+          })
         )
         .optional(),
-
       tags: z.array(z.string()).optional(),
       code: z
         .string({
@@ -158,14 +161,9 @@ const updateProductValidationSchema = z.object({
         .optional(),
       thumbnail: z
         .string({ invalid_type_error: "Thumbnail must be an URL" })
-        .url("Thumbnail must be a valid URL")
         .optional(),
       images: z
-        .array(
-          z
-            .string({ invalid_type_error: "Image must be an URL" })
-            .url("Invalid image URL detected")
-        )
+        .array(z.string({ invalid_type_error: "Image must be an URL" }))
         .optional(),
       description: z
         .string({ invalid_type_error: "Description must be a text or HTML" })

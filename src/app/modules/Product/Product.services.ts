@@ -13,16 +13,23 @@ import validateQueryFields from "../../utils/validateQueryFields";
 import addFilter from "../../utils/addFilter";
 
 const addProduct = async (payload: IProductPayload) => {
-  payload.slug = generateSlug(payload.name);
+  console.log(payload);
+  const { categories, ...remainingData } = payload;
   const result = await prisma.product.create({
-    data: payload,
+    data: {
+      ...remainingData,
+      slug: generateSlug(payload.name),
+      categories: {
+        connect: categories,
+      },
+    },
     include: {
       brand: {
         select: {
           ...brandSelectFieldsWithProduct,
         },
       },
-      category: {
+      categories: {
         select: {
           ...categorySelectFieldsWithProduct,
         },
@@ -106,10 +113,12 @@ const getProducts = async (query: Record<string, any>) => {
 
   if (category)
     andConditions.push({
-      category: {
-        title: {
-          equals: category,
-          mode: "insensitive",
+      categories: {
+        some: {
+          title: {
+            equals: category,
+            mode: "insensitive",
+          },
         },
       },
     });
@@ -178,7 +187,7 @@ const getProducts = async (query: Record<string, any>) => {
             ...brandSelectFieldsWithProduct,
           },
         },
-        category: {
+        categories: {
           select: {
             ...categorySelectFieldsWithProduct,
           },
@@ -205,13 +214,14 @@ const getSingleProduct = async (id: string) => {
     },
     include: {
       brand: true,
-      category: true,
+      categories: true,
     },
   });
   return result;
 };
 
 const updateProduct = async (id: string, payload: IProductPayload) => {
+  const { categories, ...remainingData } = payload;
   if (payload.name) {
     payload.slug = generateSlug(payload.name);
   }
@@ -219,10 +229,17 @@ const updateProduct = async (id: string, payload: IProductPayload) => {
     where: {
       id,
     },
-    data: payload,
+    data: {
+      ...remainingData,
+      ...(categories && {
+        categories: {
+          connect: categories,
+        },
+      }),
+    },
     include: {
       brand: { select: { ...brandSelectFieldsWithProduct } },
-      category: { select: { ...categorySelectFieldsWithProduct } },
+      categories: { select: { ...categorySelectFieldsWithProduct } },
     },
   });
   return result;

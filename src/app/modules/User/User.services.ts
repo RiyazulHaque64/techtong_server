@@ -121,7 +121,6 @@ const updateProfile = async (
   if (file) {
     const metadata = await sharp(file.buffer).metadata();
     const fileName = `${Date.now()}_${file.originalname}`;
-    console.log(fileName);
     const { data } = await supabase.storage
       .from("techtong")
       .upload(fileName, file.buffer, {
