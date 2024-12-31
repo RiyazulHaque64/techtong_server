@@ -26,7 +26,7 @@ router.patch(
 router.get("/:id", ProductControllers.getSingleProduct);
 
 router.delete(
-  "/:id",
+  "/delete-products",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   ProductControllers.deleteProduct
 );

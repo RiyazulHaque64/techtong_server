@@ -25,3 +25,41 @@ const attributesFormatter = (attributes) => {
 // });
 
 console.log(attributesFormatter(attribute));
+
+const specification = [
+  {
+    heading: "Main specification",
+    items: [
+      {
+        title: "Model",
+        value: "H110",
+      },
+      {
+        title: "Brand",
+        value: "Gigabyte",
+      },
+    ],
+  },
+  {
+    heading: "Warranty information",
+    items: [
+      {
+        title: "Warranty",
+        value: "1 Year",
+      },
+    ],
+  },
+];
+
+const str = "r,b,c";
+
+console.log(str.split(","));
+
+
+const params = {
+  sortBy: 'price',
+  sortOrder: 'asc',
+  category: 'all',
+}
+
+?sortBy=price&sortOrder=asc&category=all

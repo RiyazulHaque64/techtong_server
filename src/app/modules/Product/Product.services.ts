@@ -13,7 +13,6 @@ import validateQueryFields from "../../utils/validateQueryFields";
 import addFilter from "../../utils/addFilter";
 
 const addProduct = async (payload: IProductPayload) => {
-  console.log(payload);
   const { categories, ...remainingData } = payload;
   const result = await prisma.product.create({
     data: {
@@ -245,10 +244,12 @@ const updateProduct = async (id: string, payload: IProductPayload) => {
   return result;
 };
 
-const deleteProduct = async (id: string) => {
-  await prisma.product.update({
+const deleteProduct = async ({ ids }: { ids: string[] }) => {
+  await prisma.product.updateMany({
     where: {
-      id,
+      id: {
+        in: ids,
+      },
     },
     data: {
       is_deleted: true,

@@ -45,7 +45,6 @@ const addProductValidationSchema = z.object({
           required_error: "Product code is required",
           invalid_type_error: "Product code must be a text",
         })
-        .length(6, "Product code must be 6 characters long")
         .optional(),
       stock: z
         .number({
@@ -76,9 +75,12 @@ const addProductValidationSchema = z.object({
       description: z
         .string({ invalid_type_error: "Description must be a text or HTML" })
         .optional(),
-      specification: z
-        .string({ invalid_type_error: "Specification must be a text or HTML" })
-        .optional(),
+      specification: z.array(
+        z.object({
+          heading: z.string(),
+          fields: z.array(z.object({ title: z.string(), value: z.string() })),
+        })
+      ),
       additional_information: z
         .string({
           invalid_type_error: "Additional information must be a text or HTML",
@@ -88,7 +90,7 @@ const addProductValidationSchema = z.object({
         .array(z.string({ invalid_type_error: "Key feature must be a text" }))
         .optional(),
       attributes: z
-        .array(z.object({ slug: z.string(), value: z.string() }))
+        .array(z.object({ slug: z.string(), value: z.array(z.string()) }))
         .optional(),
     })
     .strict(),
@@ -137,7 +139,6 @@ const updateProductValidationSchema = z.object({
         .string({
           invalid_type_error: "Product code must be a text",
         })
-        .length(6, "Product code must be 6 characters long")
         .optional(),
       stock: z
         .number({
@@ -169,7 +170,12 @@ const updateProductValidationSchema = z.object({
         .string({ invalid_type_error: "Description must be a text or HTML" })
         .optional(),
       specification: z
-        .string({ invalid_type_error: "Specification must be a text or HTML" })
+        .array(
+          z.object({
+            heading: z.string(),
+            fields: z.array(z.object({ title: z.string(), value: z.string() })),
+          })
+        )
         .optional(),
       additional_information: z
         .string({
@@ -198,7 +204,27 @@ const updateProductValidationSchema = z.object({
     .strict(),
 });
 
+const deleteProductsValidationSchema = z.object({
+  body: z
+    .object({
+      ids: z
+        .array(
+          z
+            .string({
+              invalid_type_error: "ID must be a text",
+            })
+            .regex(
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+              "Invalid ID"
+            )
+        )
+        .min(1, "At least one ID is required"),
+    })
+    .strict(),
+});
+
 export const ProductValidations = {
   addProductValidationSchema,
   updateProductValidationSchema,
+  deleteProductsValidationSchema,
 };

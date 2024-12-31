@@ -1081,20 +1081,25 @@
 // Delete Product
 /**
  * @swagger
- * /api/v1/product/{id}:
+ * /api/v1/product/delete-products:
  *   delete:
- *     summary: Delete a product
- *     description: Delete a product
+ *     summary: Delete products by ids
+ *     description: Delete single or multiple products by ID
  *     tags: [Product]
  *     security:
  *       - AdminAuth: []
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         description: The ID of the product to delete
- *         schema:
- *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ids:
+ *                 type: array
+ *                 items:
+ *                    type: string
+ *                    example: "040fec96-2847-41d8-91cf-ae1aedeb45d2"
  *     responses:
  *       200:
  *         description: If the product is deleted successfully

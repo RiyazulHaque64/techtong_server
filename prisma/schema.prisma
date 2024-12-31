@@ -38,7 +38,7 @@ model Product {
   model                  String
   brand_id               String?
   tags                   String[]    @default([])
-  code                   String?
+  code                   String?     @unique
   stock                  Int         @default(0)
   price                  Int
   discount_price         Int?
@@ -48,7 +48,7 @@ model Product {
   published              Boolean     @default(true)
   featured               Boolean     @default(false)
   description            String? //html
-  specification          String? //html
+  specification          Json?
   additional_information String? //html
   key_features           String[]    @default([])
   video_url              String?
@@ -61,7 +61,6 @@ model Product {
 
   brand      Brand?     @relation(fields: [brand_id], references: [id])
   categories Category[] @relation("ProductCategories")
-  categoryId String?
 
   @@map("products")
 }
@@ -93,7 +92,6 @@ model Category {
   children   Category[]  @relation("CategoryToParent")
   products   Product[]   @relation("ProductCategories")
   attributes Attribute[]
-  productId  String?
 
   @@map("categories")
 }
