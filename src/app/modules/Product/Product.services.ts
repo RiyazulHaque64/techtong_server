@@ -206,14 +206,22 @@ const getProducts = async (query: Record<string, any>) => {
   };
 };
 
-const getSingleProduct = async (id: string) => {
+const getSingleProduct = async (slug: string) => {
   const result = await prisma.product.findUniqueOrThrow({
     where: {
-      id,
+      slug,
     },
     include: {
-      brand: true,
-      categories: true,
+      brand: {
+        select: {
+          ...brandSelectFieldsWithProduct,
+        },
+      },
+      categories: {
+        select: {
+          ...categorySelectFieldsWithProduct,
+        },
+      },
     },
   });
   return result;

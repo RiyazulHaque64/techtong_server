@@ -584,18 +584,18 @@
 // Get single product
 /**
  * @swagger
- * /api/v1/product/{id}:
+ * /api/v1/product/{slug}:
  *   get:
- *     summary: Retrieve a product by ID
- *     description: Retrieves a product by its ID
+ *     summary: Retrieve a product by its slug
+ *     description: Retrieves a product by its slug
  *     tags: [Product]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: slug
  *         required: true
  *         schema:
  *           type: string
- *         description: The ID of the product to retrieve
+ *         description: The slug of the product to retrieve
  *     responses:
  *       200:
  *         description: If the product is retrieved successfully

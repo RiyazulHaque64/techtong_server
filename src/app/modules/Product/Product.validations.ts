@@ -75,12 +75,14 @@ const addProductValidationSchema = z.object({
       description: z
         .string({ invalid_type_error: "Description must be a text or HTML" })
         .optional(),
-      specification: z.array(
-        z.object({
-          heading: z.string(),
-          fields: z.array(z.object({ title: z.string(), value: z.string() })),
-        })
-      ),
+      specification: z
+        .array(
+          z.object({
+            heading: z.string(),
+            fields: z.array(z.object({ title: z.string(), value: z.string() })),
+          })
+        )
+        .optional(),
       additional_information: z
         .string({
           invalid_type_error: "Additional information must be a text or HTML",

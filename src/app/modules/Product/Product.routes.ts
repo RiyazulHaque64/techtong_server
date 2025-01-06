@@ -23,7 +23,7 @@ router.patch(
   ProductControllers.updateProduct
 );
 
-router.get("/:id", ProductControllers.getSingleProduct);
+router.get("/:slug", ProductControllers.getSingleProduct);
 
 router.delete(
   "/delete-products",
