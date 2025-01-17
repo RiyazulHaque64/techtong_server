@@ -192,7 +192,7 @@ const updateProductValidationSchema = z.object({
         .url("Video url must be a valid URL")
         .optional(),
       attributes: z
-        .array(z.object({ slug: z.string(), value: z.string() }))
+        .array(z.object({ slug: z.string(), value: z.array(z.string()) }))
         .optional(),
       featured: z
         .boolean({ invalid_type_error: "Featured value must be true or false" })

@@ -11,11 +11,13 @@ const handlePrismaClientKnownError = (
 
   if (err.code === "P2002" && err.meta?.target) {
     statusCode = httpStatus.CONFLICT;
-    message = "Unique constraint violation. Duplicate value exists.";
+    message = "Duplicate value exists.";
     errorSources = (err.meta.target as string[]).map((field: string) => ({
       path: field,
-      message: `The ${field} is already exists in the ${err.meta?.modelName}. Duplicate value found.`,
+      message: `The ${field} is already exists in the ${err.meta?.modelName}. Please try another ${field} or undo from the trash`,
     }));
+    if (errorSources.length)
+      message = errorSources.map((item) => item.message).join(" | ");
   } else if (err.code === "P2025") {
     statusCode = httpStatus.NOT_FOUND;
     message = err.message.length < 200 ? err.message : "Data not found";

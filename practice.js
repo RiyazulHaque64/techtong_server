@@ -55,11 +55,12 @@ const str = "r,b,c";
 
 console.log(str.split(","));
 
-
 const params = {
-  sortBy: 'price',
-  sortOrder: 'asc',
-  category: 'all',
-}
+  sortBy: "price",
+  sortOrder: "asc",
+  category: "all",
+};
 
-?sortBy=price&sortOrder=asc&category=all
+const path = "/general/riyazul.jpg";
+
+console.log(path.split("/").pop());
