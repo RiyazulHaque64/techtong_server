@@ -10,10 +10,12 @@ import {
 } from "./Review.constants";
 import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
+
 const createReview = async (
   user: TAuthUser | undefined,
   payload: TCreateReviewPayload
 ) => {
+  console.log(payload);
   const product = await prisma.product.findUnique({
     where: {
       id: payload.product_id,

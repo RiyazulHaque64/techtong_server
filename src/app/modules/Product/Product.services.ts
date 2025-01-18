@@ -222,9 +222,35 @@ const getSingleProduct = async (slug: string) => {
           ...categorySelectFieldsWithProduct,
         },
       },
+      reviews: {
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          created_at: true,
+          updated_at: true,
+          user: {
+            select: {
+              name: true,
+              email: true,
+              profile_pic: true,
+            },
+          },
+        },
+      },
     },
   });
-  return result;
+
+  let avg_rating = 0;
+  if (result) {
+    avg_rating =
+      result.reviews.reduce((acc, review) => acc + review.rating, 0) /
+      result.reviews.length;
+  }
+  return {
+    ...result,
+    avg_rating,
+  };
 };
 
 const updateProduct = async (id: string, payload: IProductPayload) => {

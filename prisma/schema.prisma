@@ -163,7 +163,7 @@ model Review {
   id         String   @id @default(uuid())
   user_id    String
   product_id String
-  rating     Int      @default(5)
+  rating     Float    @default(5)
   comment    String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
