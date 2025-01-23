@@ -11,6 +11,7 @@ import {
 } from "./Product.constants";
 import validateQueryFields from "../../utils/validateQueryFields";
 import addFilter from "../../utils/addFilter";
+import config from "../../../config";
 
 const addProduct = async (payload: IProductPayload) => {
   const { categories, ...remainingData } = payload;
@@ -68,10 +69,44 @@ const getProducts = async (query: Record<string, any>) => {
 
   const andConditions: Prisma.ProductWhereInput[] = [{ is_deleted: false }];
 
+  // if (searchTerm) {
+  //   const words: string[] = searchTerm
+  //     .split(" ")
+  //     .filter((word: string) => word.length > 0);
+
+  //   andConditions.push({
+  //     OR: words.flatMap((word: string) => [
+  //       ...productSearchableFields.map((field) => ({
+  //         [field]: {
+  //           contains: word,
+  //           mode: "insensitive",
+  //         },
+  //       })),
+  //       {
+  //         brand: {
+  //           name: {
+  //             contains: word,
+  //             mode: "insensitive",
+  //           },
+  //         },
+  //       },
+  //       {
+  //         category: {
+  //           title: {
+  //             contains: word,
+  //             mode: "insensitive",
+  //           },
+  //         },
+  //       },
+  //     ]),
+  //   });
+  // }
+
   if (searchTerm) {
     const words: string[] = searchTerm
       .split(" ")
       .filter((word: string) => word.length > 0);
+
     andConditions.push({
       OR: words.flatMap((word: string) => [
         ...productSearchableFields.map((field) => ({
@@ -80,22 +115,6 @@ const getProducts = async (query: Record<string, any>) => {
             mode: "insensitive",
           },
         })),
-        {
-          brand: {
-            name: {
-              contains: word,
-              mode: "insensitive",
-            },
-          },
-        },
-        {
-          category: {
-            title: {
-              contains: word,
-              mode: "insensitive",
-            },
-          },
-        },
       ]),
     });
   }
@@ -172,7 +191,15 @@ const getProducts = async (query: Record<string, any>) => {
     AND: andConditions,
   };
 
-  const [result, total] = await Promise.all([
+  const [
+    result,
+    total,
+    all,
+    published_count,
+    featured_count,
+    low_stock,
+    in_stock,
+  ] = await Promise.all([
     prisma.product.findMany({
       where: whereConditions,
       skip: skip,
@@ -194,6 +221,15 @@ const getProducts = async (query: Record<string, any>) => {
       },
     }),
     prisma.product.count({ where: whereConditions }),
+    prisma.product.count({ where: { is_deleted: false } }),
+    prisma.product.count({ where: { published: true } }),
+    prisma.product.count({ where: { featured: true } }),
+    prisma.product.count({
+      where: { stock: { gt: 0, lt: config.low_stock_threshold } },
+    }),
+    prisma.product.count({
+      where: { stock: { gt: config.low_stock_threshold } },
+    }),
   ]);
 
   return {
@@ -201,6 +237,12 @@ const getProducts = async (query: Record<string, any>) => {
       page: pageNumber,
       limit: limitNumber,
       total,
+      all,
+      published: published_count,
+      draft: total - published_count,
+      featured: featured_count,
+      low_stock,
+      in_stock,
     },
     data: result,
   };

@@ -26,4 +26,5 @@ export default {
   supabase_bucket_url: process.env.SUPABASE_BUCKET_URL,
   supabase_bucket_key: process.env.SUPABASE_BUCKET_KEY,
   supabase_bucket_name: process.env.SUPABASE_BUCKET_NAME,
+  low_stock_threshold: 3,
 };
