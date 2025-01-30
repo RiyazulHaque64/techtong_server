@@ -52,6 +52,7 @@ const getProducts = async (query: Record<string, any>) => {
     featured,
     minPrice,
     maxPrice,
+    stock_status,
     ...remainingQuery
   } = query;
 
@@ -140,6 +141,21 @@ const getProducts = async (query: Record<string, any>) => {
         },
       },
     });
+
+  if (stock_status?.length) {
+    andConditions.push({
+      stock:
+        stock_status === "out_of_stock"
+          ? {
+              equals: 0,
+            }
+          : stock_status === "low_stock"
+          ? { lt: config.low_stock_threshold }
+          : {
+              gt: 0,
+            },
+    });
+  }
 
   if (published)
     andConditions.push({

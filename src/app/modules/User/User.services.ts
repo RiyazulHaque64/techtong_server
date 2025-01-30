@@ -1,4 +1,4 @@
-import { Prisma, UploadedFrom, UserRole, UserStatus } from "@prisma/client";
+import { Prisma, UserRole, UserStatus } from "@prisma/client";
 import pagination from "../../utils/pagination";
 import {
   userFieldsValidationConfig,
@@ -8,13 +8,13 @@ import {
 import prisma from "../../shared/prisma";
 import { TAuthUser } from "../../interfaces/common";
 import { TFile } from "../../interfaces/file";
-import { fileUploader } from "../../utils/fileUploader";
 import ApiError from "../../error/ApiError";
 import httpStatus from "http-status";
 import { TUpdateUserPayload } from "./User.interfaces";
 import validateQueryFields from "../../utils/validateQueryFields";
 import sharp from "sharp";
 import supabase from "../../shared/supabase";
+import config from "../../../config";
 
 const getUsers = async (query: Record<string, any>) => {
   const { searchTerm, page, limit, sortBy, sortOrder, ...remainingQuery } =
@@ -112,7 +112,7 @@ const getMe = async (user: TAuthUser | undefined) => {
 };
 
 const updateProfile = async (
-  user: TAuthUser | undefined,
+  user: TAuthUser,
   payload: Record<string, any>,
   file: TFile | undefined
 ) => {
@@ -122,7 +122,7 @@ const updateProfile = async (
     const metadata = await sharp(file.buffer).metadata();
     const fileName = `${Date.now()}_${file.originalname}`;
     const { data } = await supabase.storage
-      .from("techtong")
+      .from(config.user_bucket)
       .upload(fileName, file.buffer, {
         contentType: file.mimetype,
       });
@@ -135,8 +135,7 @@ const updateProfile = async (
     }
 
     const image = {
-      uploaded_from: UploadedFrom.USER,
-      user_id: user?.id,
+      user_id: user.id,
       name: file.originalname,
       alt_text: file.originalname,
       type: file.mimetype,
@@ -145,6 +144,7 @@ const updateProfile = async (
       height: metadata.height || 0,
       path: data.path,
       bucket_id: data.id,
+      bucket_name: config.user_bucket,
     };
 
     profilePic = await prisma.image.create({
@@ -164,7 +164,9 @@ const updateProfile = async (
         },
       });
       if (profilePic) {
-        await fileUploader.deleteToCloudinary([profilePic.bucket_id]);
+        await supabase.storage
+          .from(config.user_bucket)
+          .remove([profilePic.path]);
         await prisma.image.delete({
           where: {
             id: profilePic.id,

@@ -15,9 +15,6 @@ export default {
   jwt_access_expiresin: process.env.JWT_ACCESS_EXPIRESIN,
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
   jwt_refresh_expiresin: process.env.JWT_REFRESH_EXPIRESIN,
-  cloud_name: process.env.CLOUD_NAME,
-  cloudinary_api_key: process.env.CLOUDINARY_API_KEY,
-  cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET,
   twilio_sid: process.env.TWILIO_SID,
   twilio_auth_token: process.env.TWILIO_AUTH_TOKEN,
   twilio_phone_number: process.env.TWILIO_PHONE_NUMBER,
@@ -25,6 +22,7 @@ export default {
   email_app_pass: process.env.EMAIL_APP_PASS,
   supabase_bucket_url: process.env.SUPABASE_BUCKET_URL,
   supabase_bucket_key: process.env.SUPABASE_BUCKET_KEY,
-  supabase_bucket_name: process.env.SUPABASE_BUCKET_NAME,
+  user_bucket: process.env.USER_BUCKET,
+  general_bucket: process.env.GENERAL_BUCKET,
   low_stock_threshold: 3,
 };

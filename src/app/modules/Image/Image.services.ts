@@ -1,8 +1,7 @@
 import httpStatus from "http-status";
 import ApiError from "../../error/ApiError";
-import { TCloudinaryResponse, TFiles } from "../../interfaces/file";
-import { Prisma, UploadedFrom } from "@prisma/client";
-import { fileUploader } from "../../utils/fileUploader";
+import { TFiles } from "../../interfaces/file";
+import { Prisma } from "@prisma/client";
 import prisma from "../../shared/prisma";
 import { Request } from "express";
 import { TDeleteImagePayload, TUpdateImagePayload } from "./Image.interfaces";
@@ -38,7 +37,7 @@ const uploadImages = async (req: Request & { user?: TAuthUser }) => {
       }
       const metadata = await sharp(file.buffer).metadata();
       const { data } = await supabase.storage
-        .from(config.supabase_bucket_name)
+        .from(config.general_bucket)
         .upload(file.originalname, file.buffer, {
           contentType: file.mimetype,
         });
@@ -54,6 +53,7 @@ const uploadImages = async (req: Request & { user?: TAuthUser }) => {
           height: metadata.height || 0,
           path: data.path,
           bucket_id: data.id,
+          bucket_name: config.general_bucket,
         });
       }
     }
@@ -87,7 +87,7 @@ const getImages = async (query: Record<string, any>) => {
   });
 
   const andConditions: Prisma.ImageWhereInput[] = [
-    { uploaded_from: UploadedFrom.ADMIN },
+    { bucket_name: config.general_bucket },
   ];
 
   if (searchTerm) {
@@ -143,7 +143,7 @@ const getImages = async (query: Record<string, any>) => {
         [sortWith]: sortSequence,
       },
       include: {
-        user: {
+        uploaded_by: {
           select: {
             id: true,
             name: true,
@@ -170,7 +170,7 @@ const getImage = async (id: string) => {
       id,
     },
     include: {
-      user: {
+      uploaded_by: {
         select: {
           id: true,
           name: true,
@@ -195,7 +195,7 @@ const updateImage = async (id: string, payload: TUpdateImagePayload) => {
 const deleteImages = async (payload: TDeleteImagePayload) => {
   const { images_path } = payload;
   const { data, error } = await supabase.storage
-    .from(config.supabase_bucket_name)
+    .from(config.general_bucket)
     .remove(images_path);
 
   if ((error as any)?.status === 400 || data?.length === 0)

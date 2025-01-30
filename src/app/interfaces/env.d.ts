@@ -12,9 +12,6 @@ declare namespace NodeJS {
     SUPER_ADMIN_PASSWORD: string;
     SUPER_ADMIN_EMAIL: string;
     SUPER_ADMIN_CONTACT_NUMBER: string;
-    CLOUD_NAME: string;
-    CLOUDINARY_API_KEY: string;
-    CLOUDINARY_API_SECRET: string;
     TWILIO_SID: string;
     TWILIO_AUTH_TOKEN: string;
     TWILIO_PHONE_NUMBER: string;
@@ -22,6 +19,7 @@ declare namespace NodeJS {
     EMAIL_APP_PASS: string;
     SUPABASE_BUCKET_URL: string;
     SUPABASE_BUCKET_KEY: string;
-    SUPABASE_BUCKET_NAME: string;
+    USER_BUCKET: string;
+    GENERAL_BUCKET: string;
   }
 }

@@ -6,10 +6,16 @@ const handleZodError = (err: ZodError): TGenericErrorResponse => {
     path: issue.path[issue.path.length - 1],
     message: issue.message,
   }));
+  let message = "Validation error!";
   const statusCode = 400;
+
+  if (errorSources?.length) {
+    message = errorSources.map((item) => item.message).join(" | ");
+  }
+
   return {
     statusCode,
-    message: "Validation error!",
+    message,
     errorSources,
   };
 };
