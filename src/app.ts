@@ -15,7 +15,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookiePerser());
 app.use(
   cors({
-    origin: ["https://techtong-client.vercel.app", "http://localhost:8081"],
+    origin: [
+      "https://techtong-client.vercel.app",
+      "http://localhost:8081",
+      "http://localhost:8084",
+    ],
     credentials: true,
   })
 );
