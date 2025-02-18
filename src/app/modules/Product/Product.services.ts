@@ -14,30 +14,65 @@ import addFilter from "../../utils/addFilter";
 import config from "../../../config";
 
 const addProduct = async (payload: IProductPayload) => {
-  const { categories, ...remainingData } = payload;
-  const result = await prisma.product.create({
-    data: {
-      ...remainingData,
-      slug: generateSlug(payload.name),
-      categories: {
-        connect: categories,
-      },
-    },
-    include: {
-      brand: {
-        select: {
-          ...brandSelectFieldsWithProduct,
+  const { categories, attributes, ...remainingData } = payload;
+  const result = await prisma.$transaction(async (tx) => {
+    const product = await prisma.product.create({
+      data: {
+        ...remainingData,
+        slug: generateSlug(payload.name),
+        categories: {
+          connect: categories,
         },
       },
-      categories: {
-        select: {
-          ...categorySelectFieldsWithProduct,
+      include: {
+        brand: {
+          select: {
+            ...brandSelectFieldsWithProduct,
+          },
+        },
+        categories: {
+          select: {
+            ...categorySelectFieldsWithProduct,
+          },
         },
       },
-    },
+    });
+
+    if (payload.attributes?.length) {
+      const productAttributeEntries = payload.attributes.map((attribute) => ({
+        title: attribute.title,
+        value: attribute.value,
+        product_id: product.id,
+      }));
+
+      await tx.productAttribute.createMany({
+        data: productAttributeEntries,
+      });
+    }
+
+    return product;
   });
+
   return result;
 };
+
+// const getProducts = async () => {
+//   const products = await prisma.product.findMany({
+//     where: {
+//       categories: {
+//         some: {
+//           title: {
+//             equals: "Speakers",
+//           },
+//         },
+//       },
+//     },
+//   });
+
+//   return {
+//     data: products,
+//   };
+// };
 
 const getProducts = async (query: Record<string, any>) => {
   const {
@@ -68,40 +103,11 @@ const getProducts = async (query: Record<string, any>) => {
     sortOrder,
   });
 
-  const andConditions: Prisma.ProductWhereInput[] = [{ is_deleted: false }];
-
-  // if (searchTerm) {
-  //   const words: string[] = searchTerm
-  //     .split(" ")
-  //     .filter((word: string) => word.length > 0);
-
-  //   andConditions.push({
-  //     OR: words.flatMap((word: string) => [
-  //       ...productSearchableFields.map((field) => ({
-  //         [field]: {
-  //           contains: word,
-  //           mode: "insensitive",
-  //         },
-  //       })),
-  //       {
-  //         brand: {
-  //           name: {
-  //             contains: word,
-  //             mode: "insensitive",
-  //           },
-  //         },
-  //       },
-  //       {
-  //         category: {
-  //           title: {
-  //             contains: word,
-  //             mode: "insensitive",
-  //           },
-  //         },
-  //       },
-  //     ]),
-  //   });
-  // }
+  const andConditions: Prisma.ProductWhereInput[] = [
+    {
+      is_deleted: false,
+    },
+  ];
 
   if (searchTerm) {
     const words: string[] = searchTerm
@@ -171,35 +177,24 @@ const getProducts = async (query: Record<string, any>) => {
   addFilter(andConditions, "price", "lte", Number(maxPrice));
 
   if (Object.keys(remainingQuery).length) {
-    Object.keys(remainingQuery).forEach((key) => {
-      const queryValue = remainingQuery[key].includes(",")
-        ? remainingQuery[key].split(",")
-        : remainingQuery[key];
-      if (Array.isArray(queryValue)) {
-        andConditions.push({
-          OR: queryValue.map((value: string) => ({
-            attributes: {
-              array_contains: [
-                {
-                  slug: key,
-                  value,
-                },
-              ],
+    Object.entries(remainingQuery).forEach(([key, value]) => {
+      const values = Array.isArray(value)
+        ? value
+        : value.split(",").map((v: string) => v.trim());
+
+      andConditions.push({
+        attributes: {
+          some: {
+            title: {
+              equals: key,
+              mode: "insensitive",
             },
-          })),
-        });
-      } else {
-        andConditions.push({
-          attributes: {
-            array_contains: [
-              {
-                slug: key,
-                value: queryValue,
-              },
-            ],
+            value: {
+              hasSome: values,
+            },
           },
-        });
-      }
+        },
+      });
     });
   }
 
@@ -232,6 +227,12 @@ const getProducts = async (query: Record<string, any>) => {
         categories: {
           select: {
             ...categorySelectFieldsWithProduct,
+          },
+        },
+        attributes: {
+          select: {
+            title: true,
+            value: true,
           },
         },
       },
@@ -280,6 +281,12 @@ const getSingleProduct = async (slug: string) => {
           ...categorySelectFieldsWithProduct,
         },
       },
+      attributes: {
+        select: {
+          title: true,
+          value: true,
+        },
+      },
       reviews: {
         select: {
           id: true,
@@ -312,26 +319,50 @@ const getSingleProduct = async (slug: string) => {
 };
 
 const updateProduct = async (id: string, payload: IProductPayload) => {
-  const { categories, ...remainingData } = payload;
+  const { categories, attributes, ...remainingData } = payload;
   if (payload.name) {
     payload.slug = generateSlug(payload.name);
   }
-  const result = await prisma.product.update({
-    where: {
-      id,
-    },
-    data: {
-      ...remainingData,
-      ...(categories && {
-        categories: {
-          connect: categories,
+  const result = await prisma.$transaction(async (tx) => {
+    const product = await tx.product.update({
+      where: {
+        id,
+      },
+      data: {
+        ...remainingData,
+        ...(categories && {
+          categories: {
+            connect: categories,
+          },
+        }),
+      },
+      include: {
+        brand: { select: { ...brandSelectFieldsWithProduct } },
+        categories: { select: { ...categorySelectFieldsWithProduct } },
+      },
+    });
+
+    if (payload.attributes?.length) {
+      const productAttributeEntries = payload.attributes.map((attribute) => ({
+        title: attribute.title,
+        value: attribute.value,
+        product_id: product.id,
+      }));
+
+      // delete previous attribute
+      await tx.productAttribute.deleteMany({
+        where: {
+          product_id: product.id,
         },
-      }),
-    },
-    include: {
-      brand: { select: { ...brandSelectFieldsWithProduct } },
-      categories: { select: { ...categorySelectFieldsWithProduct } },
-    },
+      });
+
+      // create update attribute
+      await tx.productAttribute.createMany({
+        data: productAttributeEntries,
+      });
+    }
+
+    return product;
   });
   return result;
 };

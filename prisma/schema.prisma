@@ -52,15 +52,15 @@ model Product {
   additional_information String? //html
   key_features           String[]    @default([])
   video_url              String?
-  attributes             Json?
   is_deleted             Boolean     @default(false)
   created_at             DateTime    @default(now())
   updated_at             DateTime    @updatedAt
   orderItems             OrderItem[]
   reviews                Review[]
 
-  brand      Brand?     @relation(fields: [brand_id], references: [id])
-  categories Category[] @relation("ProductCategories")
+  brand      Brand?             @relation(fields: [brand_id], references: [id])
+  categories Category[]         @relation("ProductCategories")
+  attributes ProductAttribute[]
 
   @@map("products")
 }
@@ -271,7 +271,6 @@ model Attribute {
   id          String   @id @default(uuid())
   category_id String?
   name        String
-  slug        String
   value       String[] @default([])
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
@@ -279,6 +278,17 @@ model Attribute {
   category Category? @relation(fields: [category_id], references: [id])
 
   @@map("attributes")
+}
+
+model ProductAttribute {
+  id         String   @id @default(uuid())
+  title      String
+  value      String[]
+  product_id String
+
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("product_attributes")
 }
 
 enum UserStatus {

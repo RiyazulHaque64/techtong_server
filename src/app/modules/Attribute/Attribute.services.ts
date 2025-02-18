@@ -19,7 +19,6 @@ const addAttribute = async (payload: TAttributePayload) => {
         },
       });
     }
-  payload.slug = generateSlug(payload.name);
 
   const result = await prisma.attribute.create({
     data: payload,
@@ -170,9 +169,6 @@ const updateAttribute = async (id: string, payload: TAttributePayload) => {
         id: payload.category_id,
       },
     });
-  }
-  if (payload.name) {
-    payload.slug = generateSlug(payload.name);
   }
   const result = await prisma.attribute.update({
     where: {

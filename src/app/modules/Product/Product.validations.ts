@@ -92,7 +92,7 @@ const addProductValidationSchema = z.object({
         .array(z.string({ invalid_type_error: "Key feature must be a text" }))
         .optional(),
       attributes: z
-        .array(z.object({ slug: z.string(), value: z.array(z.string()) }))
+        .array(z.object({ title: z.string(), value: z.array(z.string()) }))
         .optional(),
     })
     .strict(),
@@ -192,7 +192,7 @@ const updateProductValidationSchema = z.object({
         .url("Video url must be a valid URL")
         .optional(),
       attributes: z
-        .array(z.object({ slug: z.string(), value: z.array(z.string()) }))
+        .array(z.object({ title: z.string(), value: z.array(z.string()) }))
         .optional(),
       featured: z
         .boolean({ invalid_type_error: "Featured value must be true or false" })
