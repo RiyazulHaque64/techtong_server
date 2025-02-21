@@ -9,7 +9,7 @@ import swaggerRoutes from "./app/routes/swagger.routes";
 
 const app: Application = express();
 
-// third party middleware configuration here
+// third party middleware configuration
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookiePerser());
