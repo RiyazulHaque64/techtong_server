@@ -1,15 +1,15 @@
-import express, { Application, Request, Response } from "express";
-import cors from "cors";
-import httpStatus from "http-status";
 import cookiePerser from "cookie-parser";
+import cors from "cors";
+import express, { Application, Request, Response } from "express";
+import httpStatus from "http-status";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFoundHandler from "./app/middlewares/notFoundHandler";
-import swaggerRoutes from "./app/routes/swagger.routes";
 import router from "./app/routes";
+import swaggerRoutes from "./app/routes/swagger.routes";
 
 const app: Application = express();
 
-// third party middleware configuration
+// third party middleware configuration here
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookiePerser());
