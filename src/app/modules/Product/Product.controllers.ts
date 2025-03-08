@@ -1,9 +1,7 @@
-import { Request } from "express";
-import catchAsync from "../../shared/catchAsync";
-import { ProductServices } from "./Product.services";
-import { TAuthUser } from "../../interfaces/common";
-import sendResponse from "../../shared/sendResponse";
 import httpStatus from "http-status";
+import catchAsync from "../../shared/catchAsync";
+import sendResponse from "../../shared/sendResponse";
+import { ProductServices } from "./Product.services";
 
 const addProduct = catchAsync(async (req, res, next) => {
   const result = await ProductServices.addProduct(req.body);
@@ -16,6 +14,7 @@ const addProduct = catchAsync(async (req, res, next) => {
 });
 
 const getProducts = catchAsync(async (req, res, next) => {
+  console.log(req.query)
   const result = await ProductServices.getProducts(req.query);
   sendResponse(res, {
     statusCode: httpStatus.OK,

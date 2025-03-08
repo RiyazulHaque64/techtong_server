@@ -1,13 +1,14 @@
 import { DeliveryMethod, PaymentMethod, Prisma } from "@prisma/client";
+import httpStatus from "http-status";
+import ApiError from "../../error/ApiError";
 import { TAuthUser } from "../../interfaces/common";
 import prisma from "../../shared/prisma";
-import {
-  TCreateOrderForGuestUser,
-  TCreateOrderForRegisteredUser,
-  TOrderItem,
-  TUpdateOrderByAdminPayload,
-  TUpdateOrderByCustomerPayload,
-} from "./Order.interfaces";
+import addFilter from "../../utils/addFilter";
+import { generateOrderId } from "../../utils/helper";
+import pagination from "../../utils/pagination";
+import validateQueryFields from "../../utils/validateQueryFields";
+import { TApplyCouponResponse } from "../Coupon/Coupon.interfaces";
+import { CouponServices } from "../Coupon/Coupon.services";
 import {
   allowedTransitions,
   HOME_DELIVERY_CHARGE,
@@ -16,13 +17,13 @@ import {
   orderSearchableFieldsWithCustomerInfo,
   orderSelectedFields,
 } from "./Order.constants";
-import ApiError from "../../error/ApiError";
-import httpStatus from "http-status";
-import { CouponServices } from "../Coupon/Coupon.services";
-import { TApplyCouponResponse } from "../Coupon/Coupon.interfaces";
-import validateQueryFields from "../../utils/validateQueryFields";
-import pagination from "../../utils/pagination";
-import addFilter from "../../utils/addFilter";
+import {
+  TCreateOrderForGuestUser,
+  TCreateOrderForRegisteredUser,
+  TOrderItem,
+  TUpdateOrderByAdminPayload,
+  TUpdateOrderByCustomerPayload,
+} from "./Order.interfaces";
 
 const createOrderForRegisteredUser = async (
   user: TAuthUser | undefined,
@@ -102,7 +103,10 @@ const createOrderForRegisteredUser = async (
     coupon_id: coupon?.id || null,
   };
 
+  const new_order_id = await generateOrderId();
+
   const orderInfo = {
+    order_id: new_order_id,
     user_id: user?.id as string,
     payment_method: payment_method || PaymentMethod.CASH_ON_DELIVERY,
     delivery_method: delivery_method || DeliveryMethod.HOME_DELIVERY,
@@ -234,7 +238,10 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
     coupon_id: coupon?.id || null,
   };
 
+  const new_order_id = await generateOrderId();
+
   const orderInfo = {
+    order_id: new_order_id,
     payment_method: payment_method || PaymentMethod.CASH_ON_DELIVERY,
     delivery_method: delivery_method || DeliveryMethod.HOME_DELIVERY,
     delivery_charge: deliveryCharge,

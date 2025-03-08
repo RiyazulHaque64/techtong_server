@@ -122,6 +122,7 @@ model CartItem {
 
 model Order {
   id               String         @id @default(uuid())
+  order_id         String
   user_id          String?
   customer_info_id String
   payment_method   PaymentMethod  @default(CASH_ON_DELIVERY)
@@ -309,6 +310,7 @@ enum OrderStatus {
   PROCESSING
   SHIPPED
   DELIVERED
+  REFUNDED
   CANCELLED
 }
 

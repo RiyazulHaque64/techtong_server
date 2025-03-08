@@ -29,3 +29,9 @@ export const categorySelectFieldsWithProduct = {
   slug: true,
   icon: true,
 };
+
+export const PRODUCT_STATUS = {
+  PUBLISHED: 'published',
+  FEATURED: 'featured',
+  DRAFT: 'draft',
+}

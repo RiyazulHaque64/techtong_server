@@ -8,6 +8,7 @@ import validateQueryFields from "../../utils/validateQueryFields";
 import {
   brandSelectFieldsWithProduct,
   categorySelectFieldsWithProduct,
+  PRODUCT_STATUS,
   productFieldsValidationConfig,
   productSearchableFields,
 } from "./Product.constants";
@@ -83,12 +84,13 @@ const getProducts = async (query: Record<string, any>) => {
     sortOrder,
     brand,
     category,
-    published,
-    featured,
+    status,
     price_range,
     stock_status,
     ...remainingQuery
   } = query;
+
+  console.log(stock_status);
 
   if (sortBy)
     validateQueryFields(productFieldsValidationConfig, "sort_by", sortBy);
@@ -171,22 +173,34 @@ const getProducts = async (query: Record<string, any>) => {
             equals: 0,
           }
           : stock_status === "low_stock"
-            ? { lt: config.low_stock_threshold }
+            ? { lt: config.low_stock_threshold, gt: 0 }
             : {
               gt: 0,
             },
     });
   }
 
-  if (published)
-    andConditions.push({
-      published: published === "true" ? true : false,
-    });
-
-  if (featured)
-    andConditions.push({
-      featured: featured === "true" ? true : false,
-    });
+  if (status) {
+    switch (status) {
+      case PRODUCT_STATUS.PUBLISHED:
+        andConditions.push({
+          published: true
+        })
+        break;
+      case PRODUCT_STATUS.FEATURED:
+        andConditions.push({
+          featured: true
+        })
+        break;
+      case PRODUCT_STATUS.DRAFT:
+        andConditions.push({
+          published: false
+        })
+        break;
+      default:
+        break;
+    }
+  }
 
   if (price_range) {
     const [minPrice, maxPrice] = price_range.split(',');
@@ -291,7 +305,7 @@ const getProducts = async (query: Record<string, any>) => {
       total,
       all,
       published: published_count,
-      draft: total - published_count,
+      draft: all - published_count,
       featured: featured_count,
       low_stock,
       in_stock,
