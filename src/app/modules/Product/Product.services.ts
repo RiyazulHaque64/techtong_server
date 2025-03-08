@@ -1,17 +1,17 @@
-import prisma from "../../shared/prisma";
-import { generateSlug } from "../../utils/generateSlug";
-import { IProductPayload } from "./Product.interfaces";
-import pagination from "../../utils/pagination";
 import { Prisma } from "@prisma/client";
+import config from "../../../config";
+import prisma from "../../shared/prisma";
+import addFilter from "../../utils/addFilter";
+import { generateSlug } from "../../utils/generateSlug";
+import pagination from "../../utils/pagination";
+import validateQueryFields from "../../utils/validateQueryFields";
 import {
   brandSelectFieldsWithProduct,
   categorySelectFieldsWithProduct,
   productFieldsValidationConfig,
   productSearchableFields,
 } from "./Product.constants";
-import validateQueryFields from "../../utils/validateQueryFields";
-import addFilter from "../../utils/addFilter";
-import config from "../../../config";
+import { IProductPayload } from "./Product.interfaces";
 
 const addProduct = async (payload: IProductPayload) => {
   const { categories, attributes, ...remainingData } = payload;
@@ -85,8 +85,7 @@ const getProducts = async (query: Record<string, any>) => {
     category,
     published,
     featured,
-    minPrice,
-    maxPrice,
+    price_range,
     stock_status,
     ...remainingQuery
   } = query;
@@ -106,6 +105,12 @@ const getProducts = async (query: Record<string, any>) => {
   const andConditions: Prisma.ProductWhereInput[] = [
     {
       is_deleted: false,
+    },
+  ];
+
+  const attributeAndConditions: Prisma.AttributeWhereInput[] = [
+    {
+      category: null
     },
   ];
 
@@ -136,7 +141,7 @@ const getProducts = async (query: Record<string, any>) => {
       },
     });
 
-  if (category)
+  if (category) {
     andConditions.push({
       categories: {
         some: {
@@ -147,17 +152,27 @@ const getProducts = async (query: Record<string, any>) => {
         },
       },
     });
+    attributeAndConditions.push({
+      category: {
+        title: {
+          equals: category,
+          mode: "insensitive",
+        }
+      }
+    })
+  }
+
 
   if (stock_status?.length) {
     andConditions.push({
       stock:
         stock_status === "out_of_stock"
           ? {
-              equals: 0,
-            }
+            equals: 0,
+          }
           : stock_status === "low_stock"
-          ? { lt: config.low_stock_threshold }
-          : {
+            ? { lt: config.low_stock_threshold }
+            : {
               gt: 0,
             },
     });
@@ -173,8 +188,11 @@ const getProducts = async (query: Record<string, any>) => {
       featured: featured === "true" ? true : false,
     });
 
-  addFilter(andConditions, "price", "gte", Number(minPrice));
-  addFilter(andConditions, "price", "lte", Number(maxPrice));
+  if (price_range) {
+    const [minPrice, maxPrice] = price_range.split(',');
+    addFilter(andConditions, "price", "gte", Number(minPrice));
+    addFilter(andConditions, "price", "lte", Number(maxPrice));
+  }
 
   if (Object.keys(remainingQuery).length) {
     Object.entries(remainingQuery).forEach(([key, value]) => {
@@ -202,6 +220,10 @@ const getProducts = async (query: Record<string, any>) => {
     AND: andConditions,
   };
 
+  const attributeWhereConditions = {
+    OR: attributeAndConditions,
+  };
+
   const [
     result,
     total,
@@ -210,6 +232,8 @@ const getProducts = async (query: Record<string, any>) => {
     featured_count,
     low_stock,
     in_stock,
+    maxPriceProduct,
+    attributes
   ] = await Promise.all([
     prisma.product.findMany({
       where: whereConditions,
@@ -247,6 +271,17 @@ const getProducts = async (query: Record<string, any>) => {
     prisma.product.count({
       where: { stock: { gt: config.low_stock_threshold } },
     }),
+    prisma.product.findFirst({
+      orderBy: {
+        price: 'desc'
+      }
+    }),
+    prisma.attribute.findMany({
+      where: attributeWhereConditions,
+      orderBy: {
+        name: "asc",
+      }
+    })
   ]);
 
   return {
@@ -260,6 +295,8 @@ const getProducts = async (query: Record<string, any>) => {
       featured: featured_count,
       low_stock,
       in_stock,
+      max_price: maxPriceProduct?.price,
+      attributes
     },
     data: result,
   };

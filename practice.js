@@ -124,3 +124,12 @@ const group = reviews.reduce((group, review) => {
 }, {});
 
 console.log(group["5"]);
+
+
+const searchParams = {
+  availability: "available",
+  brand: "all"
+};
+
+
+& availability=available & brand=all
