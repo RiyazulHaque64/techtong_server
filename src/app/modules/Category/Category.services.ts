@@ -1,15 +1,16 @@
+import { Prisma } from "@prisma/client";
 import httpStatus from "http-status";
+import { io } from "../../../server";
 import ApiError from "../../error/ApiError";
 import prisma from "../../shared/prisma";
 import { generateSlug } from "../../utils/generateSlug";
-import { TCategoryPayload } from "./Category.interfaces";
 import pagination from "../../utils/pagination";
-import { Prisma } from "@prisma/client";
+import validateQueryFields from "../../utils/validateQueryFields";
 import {
   categoryFieldsValidationConfig,
   categorySearchableFields,
 } from "./Category.constants";
-import validateQueryFields from "../../utils/validateQueryFields";
+import { TCategoryPayload } from "./Category.interfaces";
 
 const addCategory = async (payload: TCategoryPayload) => {
   if (payload.parent_id) {
@@ -32,6 +33,8 @@ const addCategory = async (payload: TCategoryPayload) => {
   const result = await prisma.category.create({
     data: category,
   });
+
+  io.emit("create_category", result)
 
   return result;
 };
@@ -88,13 +91,13 @@ const getCategories = async (query: Record<string, any>) => {
   const orderBy: Prisma.CategoryOrderByWithRelationInput =
     sortWith === "products"
       ? {
-          products: {
-            _count: sortSequence,
-          },
-        }
+        products: {
+          _count: sortSequence,
+        },
+      }
       : {
-          [sortWith]: sortSequence,
-        };
+        [sortWith]: sortSequence,
+      };
 
   const [result, total] = await Promise.all([
     prisma.category.findMany({

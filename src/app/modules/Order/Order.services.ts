@@ -1,5 +1,6 @@
-import { DeliveryMethod, PaymentMethod, Prisma } from "@prisma/client";
+import { DeliveryMethod, OrderStatus, PaymentMethod, Prisma } from "@prisma/client";
 import httpStatus from "http-status";
+import config from "../../../config";
 import ApiError from "../../error/ApiError";
 import { TAuthUser } from "../../interfaces/common";
 import prisma from "../../shared/prisma";
@@ -74,6 +75,8 @@ const createOrderForRegisteredUser = async (
     0
   );
 
+  const tax = Math.round(subAmount * config.tax / 100);
+
   let discountAmount = 0;
   let coupon: TApplyCouponResponse | null = null;
 
@@ -91,7 +94,7 @@ const createOrderForRegisteredUser = async (
   const totalAmount = subAmount - discountAmount;
   const deliveryCharge =
     delivery_method === DeliveryMethod.STORE_PICKUP ? 0 : HOME_DELIVERY_CHARGE;
-  const payableAmount = totalAmount + deliveryCharge;
+  const payableAmount = totalAmount + deliveryCharge + tax;
 
   const customerInfo = {
     name: customer_information.name || userInfo.name,
@@ -115,6 +118,8 @@ const createOrderForRegisteredUser = async (
     sub_amount: subAmount,
     total_amount: totalAmount,
     payable_amount: payableAmount,
+    tax,
+    percentage_of_tax: config.tax,
     coupon_id: coupon?.id || null,
     comment: comment || null,
   };
@@ -156,6 +161,14 @@ const createOrderForRegisteredUser = async (
         },
       });
     }
+
+    await tx.orderHistory.create({
+      data: {
+        order_id: order.id,
+        status: OrderStatus.PENDING,
+        remark: "Order has been created"
+      }
+    })
 
     await tx.cartItem.deleteMany({
       where: {
@@ -210,6 +223,8 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
     0
   );
 
+  const tax = Math.round(subAmount * config.tax / 100);
+
   let discountAmount = 0;
   let coupon: TApplyCouponResponse | null = null;
 
@@ -227,7 +242,7 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
   const totalAmount = subAmount - discountAmount;
   const deliveryCharge =
     delivery_method === DeliveryMethod.STORE_PICKUP ? 0 : HOME_DELIVERY_CHARGE;
-  const payableAmount = totalAmount + deliveryCharge;
+  const payableAmount = totalAmount + deliveryCharge + tax;
 
   const customerInfo = {
     name: customer_information.name,
@@ -249,6 +264,8 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
     sub_amount: subAmount,
     total_amount: totalAmount,
     payable_amount: payableAmount,
+    tax,
+    percentage_of_tax: config.tax,
     coupon_id: coupon?.id || null,
     comment: comment || null,
   };
@@ -290,6 +307,14 @@ const createOrderForGuestUser = async (data: TCreateOrderForGuestUser) => {
         },
       });
     }
+
+    await tx.orderHistory.create({
+      data: {
+        order_id: order.id,
+        status: OrderStatus.PENDING,
+        remark: "Order has been created"
+      }
+    })
 
     return order;
   });
@@ -382,7 +407,7 @@ const getOrders = async (query: Record<string, any>) => {
     AND: andConditions,
   };
 
-  const [result, total] = await Promise.all([
+  const [result, total, count_by_order_status] = await Promise.all([
     prisma.order.findMany({
       where: whereConditions,
       skip: skip,
@@ -395,17 +420,70 @@ const getOrders = async (query: Record<string, any>) => {
       },
     }),
     prisma.order.count({ where: whereConditions }),
+    prisma.order.groupBy({
+      by: ['order_status'],
+      _count: {
+        _all: true
+      }
+    })
   ]);
+
+  const formattedCount = count_by_order_status.reduce((acc: Record<string, number>, item) => {
+    const statusKey = item.order_status.toLowerCase();
+    acc[statusKey] = item._count._all;
+    return acc;
+  }, {});
 
   return {
     meta: {
       page: pageNumber,
       limit: limitNumber,
       total,
+      ...formattedCount
     },
     data: result,
   };
 };
+
+const getOrderByAdmin = async (order_id: string) => {
+  const result = await prisma.order.findUniqueOrThrow({
+    where: {
+      order_id: order_id,
+    },
+    select: {
+      ...orderSelectedFields,
+      history: {
+        select: {
+          id: true,
+          status: true,
+          remark: true,
+          created_at: true,
+          created_by: {
+            select: {
+              name: true,
+              email: true,
+              contact_number: true,
+              profile_pic: true
+            }
+          }
+        }
+      },
+      delivery_info: {
+        select: {
+          courier: {
+            select: {
+              name: true
+            }
+          },
+          tracking_id: true,
+          created_at: true
+        }
+      }
+    },
+  })
+
+  return result
+}
 
 const myOrder = async (
   user: TAuthUser | undefined,
@@ -433,8 +511,6 @@ const myOrder = async (
     sortBy,
     sortOrder,
   });
-
-  console.log(user?.id);
 
   const andConditions: Prisma.OrderWhereInput[] = [{ user_id: user?.id }];
 
@@ -507,6 +583,7 @@ const myOrder = async (
       },
       select: {
         ...orderSelectedFields,
+        history: true
       },
     }),
     prisma.order.count({ where: whereConditions }),
@@ -652,6 +729,17 @@ const updateOrderByCustomer = async (
   return result;
 };
 
+const deleteOrders = async ({ ids }: { ids: string[] }) => {
+  await prisma.order.deleteMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  });
+  return null;
+};
+
 export const OrderServices = {
   createOrderForRegisteredUser,
   createOrderForGuestUser,
@@ -659,4 +747,6 @@ export const OrderServices = {
   myOrder,
   updateOrderByAdmin,
   updateOrderByCustomer,
+  deleteOrders,
+  getOrderByAdmin
 };

@@ -1,8 +1,8 @@
-import { Router } from "express";
-import { OrderControllers } from "./Order.controllers";
-import auth from "../../middlewares/auth";
 import { UserRole } from "@prisma/client";
+import { Router } from "express";
+import auth from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
+import { OrderControllers } from "./Order.controllers";
 import { OrderValidations } from "./Order.validations";
 
 const router = Router();
@@ -34,11 +34,24 @@ router.post(
   OrderControllers.createOrderForRegisteredUser
 );
 
+router.delete(
+  "/delete-order",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(OrderValidations.deleteOrdersValidationSchema),
+  OrderControllers.deleteOrders
+);
+
 router.patch(
   "/admin/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   validateRequest(OrderValidations.updateOrderByAdminValidationSchema),
   OrderControllers.updateOrderByAdmin
+);
+
+router.get(
+  "/:orderID",
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  OrderControllers.getOrderByAdmin
 );
 
 router.patch(

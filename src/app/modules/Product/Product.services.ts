@@ -90,8 +90,6 @@ const getProducts = async (query: Record<string, any>) => {
     ...remainingQuery
   } = query;
 
-  console.log(stock_status);
-
   if (sortBy)
     validateQueryFields(productFieldsValidationConfig, "sort_by", sortBy);
   if (sortOrder)

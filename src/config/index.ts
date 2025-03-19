@@ -25,4 +25,5 @@ export default {
   user_bucket: process.env.USER_BUCKET,
   general_bucket: process.env.GENERAL_BUCKET,
   low_stock_threshold: 3,
+  tax: 5
 };

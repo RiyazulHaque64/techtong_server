@@ -1,19 +1,29 @@
-import { Server } from "http";
-import app from "./app";
-import config from "./config";
+import http from 'http';
 import cron from "node-cron";
-import clearOldOTPs from "./app/utils/clearOldOTPs";
-import { CouponServices } from "./app/modules/Coupon/Coupon.services";
+import { Server } from "socket.io";
+import app from "./app";
 import { seedSuperAdmin } from "./app/db";
+import { CouponServices } from "./app/modules/Coupon/Coupon.services";
+import clearOldOTPs from "./app/utils/clearOldOTPs";
+import config from "./config";
 
 const port = config.port || 9000;
 
-let server: Server;
+const server = http.createServer(app)
+
+// initialize socket.io
+export const io = new Server(server, {
+  cors: {
+    origin: "*"
+  }
+})
 
 async function main() {
   try {
     await seedSuperAdmin();
-    server = app.listen(port, () => {
+
+    // start server
+    server.listen(port, () => {
       console.log(`Techtong server is running on port ${port}`);
     });
 
@@ -22,6 +32,16 @@ async function main() {
       clearOldOTPs();
       CouponServices.updateCouponActiveStatus();
     });
+
+    // socket.io connection
+    io.on("connection", (socket) => {
+      console.log(`A user connected: ${socket.id}`);
+
+      socket.on("disconnect", () => {
+        console.log(`A user disconnected: ${socket.id}`);
+      })
+    });
+
   } catch (error) {
     console.log(error);
   }

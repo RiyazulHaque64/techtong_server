@@ -195,9 +195,29 @@ const updateOrderByCustomerValidationSchema = z.object({
     .strict(),
 });
 
+const deleteOrdersValidationSchema = z.object({
+  body: z
+    .object({
+      ids: z
+        .array(
+          z
+            .string({
+              invalid_type_error: "ID must be a text",
+            })
+            .regex(
+              /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+              "Invalid ID"
+            )
+        )
+        .min(1, "At least one ID is required"),
+    })
+    .strict(),
+});
+
 export const OrderValidations = {
   createOrderForRegisteredUserValidationSchema,
   createOrderForGuestUserValidationSchema,
   updateOrderByAdminValidationSchema,
   updateOrderByCustomerValidationSchema,
+  deleteOrdersValidationSchema
 };

@@ -1,11 +1,11 @@
+import { Request } from "express";
 import httpStatus from "http-status";
+import { TAuthUser } from "../../interfaces/common";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
-import { OrderServices } from "./Order.services";
-import { Request } from "express";
-import { TAuthUser } from "../../interfaces/common";
 import { pick } from "../../utils/pick";
 import { orderFilterableFields } from "./Order.constants";
+import { OrderServices } from "./Order.services";
 
 const createOrderForRegisteredUser = catchAsync(
   async (req: Request & { user?: TAuthUser }, res, next) => {
@@ -41,6 +41,16 @@ const getOrders = catchAsync(async (req: Request, res, next) => {
     message: "Orders retrieved successfully",
     meta: result.meta,
     data: result.data,
+  });
+});
+
+const getOrderByAdmin = catchAsync(async (req: Request, res, next) => {
+  const result = await OrderServices.getOrderByAdmin(req.params.orderID);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Order retrieved successfully",
+    data: result,
   });
 });
 
@@ -87,6 +97,20 @@ const updateOrderByCustomer = catchAsync(
   }
 );
 
+const deleteOrders = catchAsync(
+  async (req, res, next) => {
+    const result = await OrderServices.deleteOrders(
+      req.body
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Orders deleted successfully",
+      data: result,
+    });
+  }
+);
+
 export const OrderControllers = {
   createOrderForRegisteredUser,
   createOrderForGuestUser,
@@ -94,4 +118,6 @@ export const OrderControllers = {
   myOrder,
   updateOrderByAdmin,
   updateOrderByCustomer,
+  deleteOrders,
+  getOrderByAdmin
 };

@@ -25,8 +25,9 @@ model User {
   cards               Card[]
   reviews             Review[]
 
-  address Address[]
-  images  Image[]
+  address         Address[]
+  images          Image[]
+  order_histories OrderHistory[]
 
   @@map("users")
 }
@@ -121,28 +122,32 @@ model CartItem {
 }
 
 model Order {
-  id               String         @id @default(uuid())
-  order_id         String
-  user_id          String?
-  customer_info_id String
-  payment_method   PaymentMethod  @default(CASH_ON_DELIVERY)
-  delivery_method  DeliveryMethod @default(HOME_DELIVERY)
-  order_status     OrderStatus    @default(PENDING)
-  payment_status   PaymentStatus  @default(DUE)
-  delivery_charge  Int
-  discount_amount  Int            @default(0)
-  sub_amount       Int
-  total_amount     Int
-  payable_amount   Int
-  coupon_id        String?
-  comment          String?
-  created_at       DateTime       @default(now())
-  updated_at       DateTime       @updatedAt
+  id                String         @id @default(uuid())
+  order_id          String         @unique
+  user_id           String?
+  customer_info_id  String
+  payment_method    PaymentMethod  @default(CASH_ON_DELIVERY)
+  delivery_method   DeliveryMethod @default(HOME_DELIVERY)
+  order_status      OrderStatus    @default(PENDING)
+  payment_status    PaymentStatus  @default(DUE)
+  delivery_charge   Int
+  discount_amount   Int            @default(0)
+  sub_amount        Int
+  total_amount      Int
+  payable_amount    Int
+  tax               Int            @default(0)
+  percentage_of_tax Float          @default(0)
+  coupon_id         String?
+  comment           String?
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
 
-  user          User?        @relation(fields: [user_id], references: [id])
-  coupon        Coupon?      @relation(fields: [coupon_id], references: [id])
-  customer_info CustomerInfo @relation(fields: [customer_info_id], references: [id])
+  user          User?          @relation(fields: [user_id], references: [id])
+  coupon        Coupon?        @relation(fields: [coupon_id], references: [id])
+  customer_info CustomerInfo   @relation(fields: [customer_info_id], references: [id])
   order_items   OrderItem[]
+  history       OrderHistory[]
+  delivery_info DeliveryInfo?
 
   @@map("orders")
 }
@@ -154,10 +159,24 @@ model OrderItem {
   quantity   Int    @default(1)
   price      Int
 
-  order   Order   @relation(fields: [order_id], references: [id])
+  order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
   product Product @relation(fields: [product_id], references: [id])
 
   @@map("order_items")
+}
+
+model OrderHistory {
+  id         String      @id @default(uuid())
+  user_id    String?
+  order_id   String
+  status     OrderStatus
+  remark     String?
+  created_at DateTime    @default(now())
+
+  order      Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  created_by User? @relation(fields: [user_id], references: [id])
+
+  @@map("order_histories")
 }
 
 model Review {
@@ -222,6 +241,31 @@ model CustomerInfo {
   coupon Coupon? @relation(fields: [coupon_id], references: [id])
 
   @@map("customers_info")
+}
+
+model Courier {
+  id             String         @id @default(uuid())
+  name           String
+  address        String?
+  contact_number String?
+  email          String?
+  created_at     DateTime       @default(now())
+  delivery_info  DeliveryInfo[]
+
+  @@map("couriers")
+}
+
+model DeliveryInfo {
+  id          String   @id @default(uuid())
+  order_id    String   @unique
+  courier_id  String
+  tracking_id String?
+  created_at  DateTime @default(now())
+
+  order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  courier Courier @relation(fields: [courier_id], references: [id])
+
+  @@map("delivery_info")
 }
 
 model Card {
@@ -307,6 +351,7 @@ enum UserRole {
 
 enum OrderStatus {
   PENDING
+  CONFIRMED
   PROCESSING
   SHIPPED
   DELIVERED

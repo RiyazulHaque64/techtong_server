@@ -8,6 +8,7 @@ import { sortOrderType } from "../../constants/common";
 
 export const orderSortableFields = [
   "id",
+  "order_id",
   "payment_method",
   "delivery_method",
   "order_status",
@@ -21,7 +22,7 @@ export const orderSortableFields = [
   "updated_at",
 ];
 
-export const orderSearchableFields = ["comment"];
+export const orderSearchableFields = ["comment", "order_id"];
 export const orderSearchableFieldsWithCustomerInfo = [
   "name",
   "email",
@@ -48,6 +49,7 @@ export const HOME_DELIVERY_CHARGE: number = 65;
 
 export const orderSelectedFields = {
   id: true,
+  order_id: true,
   payment_method: true,
   delivery_method: true,
   delivery_charge: true,
@@ -55,6 +57,8 @@ export const orderSelectedFields = {
   sub_amount: true,
   total_amount: true,
   payable_amount: true,
+  tax: true,
+  percentage_of_tax: true,
   payment_status: true,
   order_status: true,
   comment: true,
@@ -63,6 +67,8 @@ export const orderSelectedFields = {
       product: {
         select: {
           name: true,
+          thumbnail: true,
+          code: true
         },
       },
       quantity: true,
@@ -74,6 +80,7 @@ export const orderSelectedFields = {
       id: true,
       name: true,
       email: true,
+      profile_pic: true,
       contact_number: true,
     },
   },
@@ -106,9 +113,11 @@ export const orderFieldsValidationConfig: Record<string, any> = {
 };
 
 export const allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
-  PENDING: ["PROCESSING", "CANCELLED"],
-  PROCESSING: ["SHIPPED", "CANCELLED"],
-  SHIPPED: ["DELIVERED", "CANCELLED"],
+  PENDING: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["PROCESSING", "CANCELLED", "REFUNDED"],
+  PROCESSING: ["SHIPPED", "CANCELLED", "REFUNDED"],
+  SHIPPED: ["DELIVERED", "CANCELLED", "REFUNDED"],
   DELIVERED: [],
   CANCELLED: [],
+  REFUNDED: [],
 };
