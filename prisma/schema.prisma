@@ -147,7 +147,7 @@ model Order {
   customer_info CustomerInfo   @relation(fields: [customer_info_id], references: [id])
   order_items   OrderItem[]
   history       OrderHistory[]
-  delivery_info DeliveryInfo?
+  shipped_info  ShippedInfo?
 
   @@map("orders")
 }
@@ -176,6 +176,7 @@ model OrderHistory {
   order      Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
   created_by User? @relation(fields: [user_id], references: [id])
 
+  @@unique([order_id, status], name: "order_id_status")
   @@map("order_histories")
 }
 
@@ -244,18 +245,18 @@ model CustomerInfo {
 }
 
 model Courier {
-  id             String         @id @default(uuid())
+  id             String        @id @default(uuid())
   name           String
   address        String?
   contact_number String?
   email          String?
-  created_at     DateTime       @default(now())
-  delivery_info  DeliveryInfo[]
+  created_at     DateTime      @default(now())
+  shipped_info   ShippedInfo[]
 
   @@map("couriers")
 }
 
-model DeliveryInfo {
+model ShippedInfo {
   id          String   @id @default(uuid())
   order_id    String   @unique
   courier_id  String
@@ -265,7 +266,7 @@ model DeliveryInfo {
   order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
   courier Courier @relation(fields: [courier_id], references: [id])
 
-  @@map("delivery_info")
+  @@map("shipped_info")
 }
 
 model Card {

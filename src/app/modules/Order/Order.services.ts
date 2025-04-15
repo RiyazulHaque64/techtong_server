@@ -5,6 +5,7 @@ import ApiError from "../../error/ApiError";
 import { TAuthUser } from "../../interfaces/common";
 import prisma from "../../shared/prisma";
 import addFilter from "../../utils/addFilter";
+import { validDateChecker } from "../../utils/checker";
 import { generateOrderId } from "../../utils/helper";
 import pagination from "../../utils/pagination";
 import validateQueryFields from "../../utils/validateQueryFields";
@@ -331,6 +332,8 @@ const getOrders = async (query: Record<string, any>) => {
     sortOrder,
     min_order_amount,
     max_order_amount,
+    from_date,
+    to_date,
     ...remainingQuery
   } = query;
 
@@ -403,6 +406,24 @@ const getOrders = async (query: Record<string, any>) => {
   addFilter(andConditions, "total_amount", "gte", Number(min_order_amount));
   addFilter(andConditions, "total_amount", "lte", Number(max_order_amount));
 
+  if (from_date) {
+    const date = validDateChecker(from_date, "fromDate");
+    andConditions.push({
+      created_at: {
+        gte: date,
+      },
+    });
+  }
+
+  if (to_date) {
+    const date = validDateChecker(to_date, "toDate");
+    andConditions.push({
+      created_at: {
+        lte: date,
+      },
+    });
+  }
+
   const whereConditions = {
     AND: andConditions,
   };
@@ -466,9 +487,12 @@ const getOrderByAdmin = async (order_id: string) => {
               profile_pic: true
             }
           }
+        },
+        orderBy: {
+          created_at: 'desc'
         }
       },
-      delivery_info: {
+      shipped_info: {
         select: {
           courier: {
             select: {
@@ -601,8 +625,11 @@ const myOrder = async (
 
 const updateOrderByAdmin = async (
   id: string,
-  payload: TUpdateOrderByAdminPayload
+  payload: TUpdateOrderByAdminPayload,
+  user: TAuthUser
 ) => {
+  const { order_history, shipped_info, ...rest } = payload;
+
   const order = await prisma.order.findUniqueOrThrow({
     where: {
       id,
@@ -626,6 +653,14 @@ const updateOrderByAdmin = async (
     );
   }
 
+  // Check delivery info when shipped the order
+  if (payload.order_status && payload.order_status === 'SHIPPED' && !shipped_info) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Delivery information is required`
+    );
+  }
+
   // Check payment status to deliver an order
   if (
     newOrderStatus === "DELIVERED" &&
@@ -634,7 +669,7 @@ const updateOrderByAdmin = async (
   ) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      `Cannot deliver an order without payment`
+      `Pay the payment`
     );
   }
 
@@ -656,12 +691,45 @@ const updateOrderByAdmin = async (
     );
   }
 
-  const result = await prisma.order.update({
-    where: {
-      id,
-    },
-    data: payload,
+  const result = await prisma.$transaction(async (tx) => {
+    if (payload.order_status) {
+      await tx.orderHistory.upsert({
+        where: {
+          order_id_status: {
+            order_id: id,
+            status: payload.order_status
+          }
+        },
+        create: {
+          user_id: user.id,
+          order_id: id,
+          status: payload.order_status,
+          remark: order_history?.remark || null
+        },
+        update: {
+          remark: order_history?.remark || null
+        }
+      })
+    };
+    if (payload.order_status === 'SHIPPED' && shipped_info) {
+      await prisma.shippedInfo.create({
+        data: {
+          order_id: id,
+          ...shipped_info
+        }
+      })
+    }
+    const updatedOrder = await prisma.order.update({
+      where: {
+        id,
+      },
+      data: rest,
+    });
+
+    return updatedOrder;
+
   });
+
   return result;
 };
 

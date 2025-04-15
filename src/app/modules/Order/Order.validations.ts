@@ -144,6 +144,21 @@ const updateOrderByAdminValidationSchema = z.object({
       comment: z
         .string({ invalid_type_error: "Comment must be a text" })
         .optional(),
+      order_history: z.object({
+        remark: z.string().optional(),
+      }).optional(),
+      shipped_info: z.object({
+        courier_id: z
+          .string({
+            required_error: "Courier name is required",
+            invalid_type_error: "Courier id must be a text",
+          })
+          .regex(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+            "Invalid courier"
+          ),
+        tracking_id: z.string({ required_error: 'Tracking ID is required', invalid_type_error: 'Tracking ID should be a text' }).min(1, "Tracking ID is required")
+      }).optional().nullable()
     })
     .strict(),
 });

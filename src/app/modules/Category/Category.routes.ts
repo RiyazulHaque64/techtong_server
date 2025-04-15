@@ -17,6 +17,7 @@ router.post(
 router.delete(
   "/delete-category",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequest(CategoryValidations.deleteCategoriesValidationSchema),
   CategoryControllers.deleteCategory
 );
 router.patch(

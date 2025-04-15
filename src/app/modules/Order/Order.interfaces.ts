@@ -45,6 +45,13 @@ export type TUpdateOrderByAdminPayload = {
   order_status?: OrderStatus;
   payment_status?: PaymentStatus;
   comment?: string;
+  order_history?: {
+    remark?: string;
+  },
+  shipped_info?: {
+    courier_id: string;
+    tracking_id: string;
+  }
 };
 
 export type TUpdateOrderByCustomerPayload = {

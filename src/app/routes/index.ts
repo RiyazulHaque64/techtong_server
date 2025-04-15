@@ -1,16 +1,17 @@
 import { Router } from "express";
-import { AuthRoutes } from "../modules/Auth/Auth.routes";
-import { UserRoutes } from "../modules/User/User.routes";
-import { ProductRoutes } from "../modules/Product/Product.routes";
-import { ImageRoutes } from "../modules/Image/Image.routes";
-import { CategoryRoutes } from "../modules/Category/Category.routes";
-import { BrandRoutes } from "../modules/Brand/Brand.routes";
 import { AddressRoutes } from "../modules/Address/Address.routes";
 import { AttributeRoutes } from "../modules/Attribute/Attribute.routes";
+import { AuthRoutes } from "../modules/Auth/Auth.routes";
+import { BrandRoutes } from "../modules/Brand/Brand.routes";
 import { CartRoutes } from "../modules/Cart/Cart.routes";
-import { OrderRoutes } from "../modules/Order/Order.routes";
+import { CategoryRoutes } from "../modules/Category/Category.routes";
 import { CouponRoutes } from "../modules/Coupon/Coupon.routes";
+import { CourierRoutes } from "../modules/Courier/Courier.routes";
+import { ImageRoutes } from "../modules/Image/Image.routes";
+import { OrderRoutes } from "../modules/Order/Order.routes";
+import { ProductRoutes } from "../modules/Product/Product.routes";
 import { ReviewRoutes } from "../modules/Review/Review.routes";
+import { UserRoutes } from "../modules/User/User.routes";
 
 const router = Router();
 
@@ -62,6 +63,10 @@ const routes = [
   {
     path: "/review",
     route: ReviewRoutes,
+  },
+  {
+    path: "/courier",
+    route: CourierRoutes,
   },
 ];
 

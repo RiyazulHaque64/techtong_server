@@ -33,6 +33,7 @@ const createOrderForGuestUser = catchAsync(async (req: Request, res, next) => {
 });
 
 const getOrders = catchAsync(async (req: Request, res, next) => {
+  console.log(req.query);
   const filteredQuery = pick(req.query, orderFilterableFields);
   const result = await OrderServices.getOrders(filteredQuery);
   sendResponse(res, {
@@ -68,10 +69,11 @@ const myOrder = catchAsync(
   }
 );
 
-const updateOrderByAdmin = catchAsync(async (req, res, next) => {
+const updateOrderByAdmin = catchAsync(async (req: Request & { user?: TAuthUser }, res, next) => {
   const result = await OrderServices.updateOrderByAdmin(
     req.params.id,
-    req.body
+    req.body,
+    req.user as TAuthUser
   );
   sendResponse(res, {
     statusCode: httpStatus.OK,

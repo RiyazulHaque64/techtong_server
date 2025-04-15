@@ -43,6 +43,8 @@ export const orderFilterableFields = [
   "limit",
   "sortBy",
   "sortOrder",
+  "from_date",
+  "to_date"
 ];
 
 export const HOME_DELIVERY_CHARGE: number = 65;
