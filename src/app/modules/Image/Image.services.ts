@@ -36,11 +36,13 @@ const uploadImages = async (req: Request & { user?: TAuthUser }) => {
         continue;
       }
       const metadata = await sharp(file.buffer).metadata();
-      const { data } = await supabase.storage
+      const { data, error } = await supabase.storage
         .from(config.general_bucket)
         .upload(file.originalname, file.buffer, {
           contentType: file.mimetype,
         });
+
+      console.log(error, config.general_bucket);
 
       if (data?.id) {
         images.push({

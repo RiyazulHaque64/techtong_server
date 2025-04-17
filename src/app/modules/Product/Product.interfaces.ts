@@ -5,6 +5,7 @@ export interface IProductPayload {
   brand_id?: string;
   tags?: string[];
   code?: string;
+  warranty?: string;
   stock?: number;
   price: number;
   discount_price?: number;

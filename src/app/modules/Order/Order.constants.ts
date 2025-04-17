@@ -44,7 +44,7 @@ export const orderFilterableFields = [
   "sortBy",
   "sortOrder",
   "from_date",
-  "to_date"
+  "to_date",
 ];
 
 export const HOME_DELIVERY_CHARGE: number = 65;
@@ -70,7 +70,8 @@ export const orderSelectedFields = {
         select: {
           name: true,
           thumbnail: true,
-          code: true
+          code: true,
+          warranty: true,
         },
       },
       quantity: true,
